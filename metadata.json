@@ -1,0 +1,6 @@
+{
+  "name": "STRIKEFRAME",
+  "description": "Tactical 2D arena combat game featuring instant username-only account creation, interactive avatar upload and cropping, profile customization, multiplayer room staging, and live career statistics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
