@@ -35,7 +35,9 @@ interface DatabaseState {
   sessions: Record<string, SessionEntry>; // keyed by tokenHash
 }
 
-const DATA_DIR = path.resolve(process.cwd(), 'data');
+const DATA_DIR = process.env.VERCEL
+  ? path.resolve('/tmp', 'inspiredpvp-data')
+  : path.resolve(process.cwd(), 'data');
 export const AVATARS_DIR = path.resolve(DATA_DIR, 'avatars');
 const DB_FILE = path.resolve(DATA_DIR, 'db.json');
 
@@ -78,6 +80,7 @@ const WEAPON_COSTS: Record<string, number> = {
 };
 
 export function getRegisteredPlayers(limit = 20): PublicPlayerInfo[] {
+  const db = getDb();
   return Object.values(db.profiles)
     .map((profile) => {
       const stats = db.player_statistics[profile.userId];
@@ -141,7 +144,14 @@ function saveDatabase(state: DatabaseState): void {
   fs.renameSync(tmpFile, DB_FILE);
 }
 
-const db: DatabaseState = loadDatabase();
+let dbInstance: DatabaseState | null = null;
+
+function getDb(): DatabaseState {
+  if (!dbInstance) {
+    dbInstance = loadDatabase();
+  }
+  return dbInstance;
+}
 
 function hashPassword(password: string, salt?: string): { hash: string; salt: string } {
   const actualSalt = salt ?? crypto.randomBytes(16).toString('hex');
@@ -163,6 +173,7 @@ function hashSessionToken(token: string): string {
 }
 
 function generateUniquePlayerId(): string {
+  const db = getDb();
   const existingIds = new Set<string>(Object.values(db.profiles).map((p) => p.playerId));
   for (let i = 0; i < 100; i++) {
     const num = crypto.randomInt(100000, 999999);
@@ -189,6 +200,7 @@ export function validateUsernameFormat(username: string): string | null {
 }
 
 export function isUsernameAvailable(username: string, excludeUserId?: string): boolean {
+  const db = getDb();
   const lower = username.trim().toLowerCase();
   return !Object.values(db.username_registry).some(
     (entry) => entry.usernameLower === lower && entry.userId !== excludeUserId
@@ -196,6 +208,7 @@ export function isUsernameAvailable(username: string, excludeUserId?: string): b
 }
 
 export function getAccountBundle(userId: string): PlayerAccountBundle | null {
+  const db = getDb();
   const profile = db.profiles[userId];
   const stats = db.player_statistics[userId];
   if (!profile || !stats) {
@@ -206,6 +219,7 @@ export function getAccountBundle(userId: string): PlayerAccountBundle | null {
 }
 
 export function createSession(userId: string, rememberMe: boolean): { token: string; maxAgeSec?: number } {
+  const db = getDb();
   const now = Date.now();
   for (const [key, session] of Object.entries(db.sessions)) {
     if (session.expiresAt < now) {
@@ -229,6 +243,7 @@ export function resolveSessionUserId(token: string | undefined): string | null {
   if (!token) {
     return null;
   }
+  const db = getDb();
   const tokenHash = hashSessionToken(token);
   const entry = db.sessions[tokenHash];
   if (!entry) {
@@ -246,6 +261,7 @@ export function revokeSession(token: string | undefined): void {
   if (!token) {
     return;
   }
+  const db = getDb();
   const tokenHash = hashSessionToken(token);
   if (db.sessions[tokenHash]) {
     delete db.sessions[tokenHash];
@@ -277,6 +293,7 @@ export function registerAccount(
     throw new Error('That username is already taken. Please choose another.');
   }
 
+  const db = getDb();
   const userId = crypto.randomUUID();
   const playerId = generateUniquePlayerId();
   const nowIso = new Date().toISOString();
@@ -349,6 +366,7 @@ export function authenticateUser(
     throw new Error('Please enter both your username and password.');
   }
 
+  const db = getDb();
   const entry = Object.values(db.username_registry).find((u) => u.usernameLower === lower);
   if (!entry || !verifyPassword(password, entry.passwordHash, entry.passwordSalt)) {
     throw new Error('Invalid username or password.');
@@ -369,6 +387,7 @@ export function changePassword(
   newPassword: string,
   confirmNewPassword: string
 ): void {
+  const db = getDb();
   const entry = db.username_registry[userId];
   if (!entry) {
     throw new Error('Account not found.');
@@ -404,6 +423,7 @@ export interface ProfileUpdateInput {
 }
 
 export function updateProfile(userId: string, input: ProfileUpdateInput): PlayerAccountBundle {
+  const db = getDb();
   const profile = db.profiles[userId];
   const registry = db.username_registry[userId];
   if (!profile || !registry) {
@@ -525,6 +545,7 @@ function deleteOldAvatarFile(profilePictureUrl: string | null): void {
 }
 
 export function saveAvatarUpload(userId: string, dataUrl: string): PlayerAccountBundle {
+  const db = getDb();
   const profile = db.profiles[userId];
   if (!profile) {
     throw new Error('Player profile not found.');
@@ -562,6 +583,7 @@ export function saveAvatarUpload(userId: string, dataUrl: string): PlayerAccount
 }
 
 export function removeAvatarUpload(userId: string): PlayerAccountBundle {
+  const db = getDb();
   const profile = db.profiles[userId];
   if (!profile) {
     throw new Error('Player profile not found.');
@@ -574,6 +596,7 @@ export function removeAvatarUpload(userId: string): PlayerAccountBundle {
 }
 
 export function unlockWeapon(userId: string, weaponId: string): PlayerAccountBundle {
+  const db = getDb();
   const profile = db.profiles[userId];
   if (!profile) {
     throw new Error('Player profile not found.');
@@ -610,6 +633,7 @@ export function recordMatchResult(
     participants: MatchParticipantResult[];
   }
 ): { bundle: PlayerAccountBundle; match: MatchRecord } {
+  const db = getDb();
   const profile = db.profiles[userId];
   const stats = db.player_statistics[userId];
   if (!profile || !stats) {
@@ -707,6 +731,7 @@ export function recordMatchResult(
 }
 
 export function getPublicPlayerByPlayerId(playerId: string): PublicPlayerInfo | null {
+  const db = getDb();
   const profile = Object.values(db.profiles).find((p) => p.playerId === playerId);
   if (!profile) {
     return null;
