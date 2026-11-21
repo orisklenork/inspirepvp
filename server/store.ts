@@ -77,168 +77,23 @@ const WEAPON_COSTS: Record<string, number> = {
   rail_carbine: 900,
 };
 
-export const BOT_ROSTER: PublicPlayerInfo[] = [
-  {
-    isBot: true,
-    profile: {
-      playerId: 'SF-104821',
-      username: 'Kestrel_OPS',
-      displayName: 'Kestrel',
-      profilePictureUrl: null,
-      selectedAvatarId: 'specter',
-      bio: 'Long-range recon specialist holding Sector A high ground.',
-      profileBackgroundId: 'obsidian_grid',
-      profileThemeId: 'sky_interceptor',
-      favoriteWeaponId: 'rail_carbine',
-      selectedCharacterId: 'specter',
-      badges: ['recruit', 'first_victory', 'sharpshooter'],
-      showcaseBadges: ['sharpshooter', 'first_victory'],
-      inventory: ['pulse_rifle', 'tactical_sidearm', 'rail_carbine'],
-      coins: 2400,
-      level: 8,
-      xp: 310,
-      createdAt: '2026-08-14T10:20:00.000Z',
-      updatedAt: '2026-11-18T14:00:00.000Z',
-    },
-    stats: {
-      totalKills: 142,
-      totalDeaths: 86,
-      totalWins: 18,
-      totalLosses: 11,
-      totalMatchesPlayed: 29,
-      winRate: 62.1,
-      updatedAt: '2026-11-18T14:00:00.000Z',
-    },
-  },
-  {
-    isBot: true,
-    profile: {
-      playerId: 'SF-209344',
-      username: 'Anvil_Seven',
-      displayName: 'Anvil',
-      profilePictureUrl: null,
-      selectedAvatarId: 'bastion',
-      bio: 'Frontline breacher. Always pushing central cover.',
-      profileBackgroundId: 'foundry_hangar',
-      profileThemeId: 'amber_vanguard',
-      favoriteWeaponId: 'scatter_cannon',
-      selectedCharacterId: 'bastion',
-      badges: ['recruit', 'first_victory', 'veteran'],
-      showcaseBadges: ['veteran', 'first_victory'],
-      inventory: ['pulse_rifle', 'tactical_sidearm', 'scatter_cannon'],
-      coins: 1950,
-      level: 7,
-      xp: 190,
-      createdAt: '2026-09-02T09:15:00.000Z',
-      updatedAt: '2026-11-17T19:40:00.000Z',
-    },
-    stats: {
-      totalKills: 119,
-      totalDeaths: 92,
-      totalWins: 14,
-      totalLosses: 12,
-      totalMatchesPlayed: 26,
-      winRate: 53.8,
-      updatedAt: '2026-11-17T19:40:00.000Z',
-    },
-  },
-  {
-    isBot: true,
-    profile: {
-      playerId: 'SF-317509',
-      username: 'Mercer_MED',
-      displayName: 'Mercer',
-      profilePictureUrl: null,
-      selectedAvatarId: 'medic',
-      bio: 'Keeping the squad upright under crossfire.',
-      profileBackgroundId: 'emerald_recon',
-      profileThemeId: 'emerald_recon',
-      favoriteWeaponId: 'pulse_rifle',
-      selectedCharacterId: 'medic',
-      badges: ['recruit', 'first_victory'],
-      showcaseBadges: ['first_victory', 'recruit'],
-      inventory: ['pulse_rifle', 'tactical_sidearm'],
-      coins: 1620,
-      level: 5,
-      xp: 120,
-      createdAt: '2026-09-21T16:45:00.000Z',
-      updatedAt: '2026-11-19T08:30:00.000Z',
-    },
-    stats: {
-      totalKills: 88,
-      totalDeaths: 74,
-      totalWins: 11,
-      totalLosses: 9,
-      totalMatchesPlayed: 20,
-      winRate: 55.0,
-      updatedAt: '2026-11-19T08:30:00.000Z',
-    },
-  },
-  {
-    isBot: true,
-    profile: {
-      playerId: 'SF-442918',
-      username: 'Valkyrie_RX',
-      displayName: 'Valkyrie',
-      profilePictureUrl: null,
-      selectedAvatarId: 'vanguard',
-      bio: 'Close-quarters rush specialist. Fast dash, faster reload.',
-      profileBackgroundId: 'amber_bunker',
-      profileThemeId: 'crimson_ace',
-      favoriteWeaponId: 'valkyrie_smg',
-      selectedCharacterId: 'vanguard',
-      badges: ['recruit', 'first_victory', 'sharpshooter', 'unstoppable'],
-      showcaseBadges: ['unstoppable', 'sharpshooter'],
-      inventory: ['pulse_rifle', 'tactical_sidearm', 'valkyrie_smg'],
-      coins: 3120,
-      level: 10,
-      xp: 440,
-      createdAt: '2026-07-28T11:00:00.000Z',
-      updatedAt: '2026-11-20T12:10:00.000Z',
-    },
-    stats: {
-      totalKills: 204,
-      totalDeaths: 103,
-      totalWins: 25,
-      totalLosses: 11,
-      totalMatchesPlayed: 36,
-      winRate: 69.4,
-      updatedAt: '2026-11-20T12:10:00.000Z',
-    },
-  },
-  {
-    isBot: true,
-    profile: {
-      playerId: 'SF-580112',
-      username: 'Rook_Iron',
-      displayName: 'Rook',
-      profilePictureUrl: null,
-      selectedAvatarId: 'emblem_steel',
-      bio: 'Tactical flanker locking down west corridors.',
-      profileBackgroundId: 'sector_courtyard',
-      profileThemeId: 'obsidian_steel',
-      favoriteWeaponId: 'tactical_sidearm',
-      selectedCharacterId: 'specter',
-      badges: ['recruit', 'veteran'],
-      showcaseBadges: ['veteran', 'recruit'],
-      inventory: ['pulse_rifle', 'tactical_sidearm'],
-      coins: 1380,
-      level: 4,
-      xp: 210,
-      createdAt: '2026-10-08T18:10:00.000Z',
-      updatedAt: '2026-11-16T22:00:00.000Z',
-    },
-    stats: {
-      totalKills: 67,
-      totalDeaths: 69,
-      totalWins: 8,
-      totalLosses: 10,
-      totalMatchesPlayed: 18,
-      winRate: 44.4,
-      updatedAt: '2026-11-16T22:00:00.000Z',
-    },
-  },
-];
+export function getRegisteredPlayers(limit = 20): PublicPlayerInfo[] {
+  return Object.values(db.profiles)
+    .map((profile) => {
+      const stats = db.player_statistics[profile.userId];
+      if (!stats) return null;
+      const { userId: _u1, ...safeProfile } = profile;
+      const { userId: _u2, ...safeStats } = stats;
+      return {
+        isBot: false,
+        profile: safeProfile,
+        stats: safeStats,
+      } satisfies PublicPlayerInfo;
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
+    .sort((a, b) => b.profile.level - a.profile.level || b.stats.totalKills - a.stats.totalKills)
+    .slice(0, limit);
+}
 
 function ensureStorageDirs(): void {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -308,10 +163,7 @@ function hashSessionToken(token: string): string {
 }
 
 function generateUniquePlayerId(): string {
-  const existingIds = new Set<string>([
-    ...Object.values(db.profiles).map((p) => p.playerId),
-    ...BOT_ROSTER.map((b) => b.profile.playerId),
-  ]);
+  const existingIds = new Set<string>(Object.values(db.profiles).map((p) => p.playerId));
   for (let i = 0; i < 100; i++) {
     const num = crypto.randomInt(100000, 999999);
     const candidate = `IP-${num}`;
@@ -338,10 +190,6 @@ export function validateUsernameFormat(username: string): string | null {
 
 export function isUsernameAvailable(username: string, excludeUserId?: string): boolean {
   const lower = username.trim().toLowerCase();
-  const botTaken = BOT_ROSTER.some((b) => b.profile.username.toLowerCase() === lower);
-  if (botTaken) {
-    return false;
-  }
   return !Object.values(db.username_registry).some(
     (entry) => entry.usernameLower === lower && entry.userId !== excludeUserId
   );
@@ -859,10 +707,6 @@ export function recordMatchResult(
 }
 
 export function getPublicPlayerByPlayerId(playerId: string): PublicPlayerInfo | null {
-  const bot = BOT_ROSTER.find((b) => b.profile.playerId === playerId);
-  if (bot) {
-    return bot;
-  }
   const profile = Object.values(db.profiles).find((p) => p.playerId === playerId);
   if (!profile) {
     return null;

@@ -10,7 +10,7 @@ import { PlayerAvatar } from './PlayerAvatar.tsx';
 interface MatchResultsViewProps {
   account: PlayerAccountBundle;
   match: MatchRecord;
-  bots: PublicPlayerInfo[];
+  players: PublicPlayerInfo[];
   onPlayAgain: () => void;
   onReturnToLobby: () => void;
   onInspectPlayer: (player: PublicPlayerInfo) => void;
@@ -19,7 +19,7 @@ interface MatchResultsViewProps {
 export function MatchResultsView({
   account,
   match,
-  bots,
+  players,
   onPlayAgain,
   onReturnToLobby,
   onInspectPlayer,
@@ -62,9 +62,9 @@ export function MatchResultsView({
       });
       return;
     }
-    const foundBot = bots.find((b) => b.profile.playerId === playerId);
-    if (foundBot) {
-      onInspectPlayer(foundBot);
+    const foundPlayer = players.find((p) => p.profile.playerId === playerId);
+    if (foundPlayer) {
+      onInspectPlayer(foundPlayer);
     }
   }
 
@@ -122,19 +122,24 @@ export function MatchResultsView({
       <div className="rounded-2xl bg-[#151C28] border border-white/10 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold text-slate-100">Match Scoreboard</h2>
-          <span className="text-xs text-slate-400">Click any operative to inspect profile</span>
+          <span className="text-xs text-slate-400">Click any registered player to inspect</span>
         </div>
 
         <div className="space-y-2.5">
           {match.participants.map((p, index) => {
             const char = getCharacterById(p.characterId);
             const wep = getWeaponById(p.weaponId);
+            const inspectable =
+              p.isUser || players.some((reg) => reg.profile.playerId === p.playerId);
             return (
               <button
                 key={p.playerId}
                 type="button"
+                disabled={!inspectable}
                 onClick={() => handleClickParticipant(p.playerId)}
-                className={`w-full text-left flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 rounded-xl px-4 py-3 border transition-colors cursor-pointer ${
+                className={`w-full text-left flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 rounded-xl px-4 py-3 border transition-colors ${
+                  inspectable ? 'cursor-pointer' : 'cursor-default'
+                } ${
                   p.isUser
                     ? 'bg-amber-500/10 border-amber-500/40'
                     : 'bg-[#0B0F17] border-white/5 hover:border-white/20'

@@ -13,7 +13,7 @@ import { PlayerAvatar } from './PlayerAvatar.tsx';
 
 interface ArenaGameCanvasProps {
   account: PlayerAccountBundle;
-  bots: PublicPlayerInfo[];
+  players: PublicPlayerInfo[];
   mode: GameMode;
   onMatchFinished: (result: {
     mode: GameMode;
@@ -195,7 +195,7 @@ function hasLineOfSight(x1: number, y1: number, x2: number, y2: number): boolean
 
 export function ArenaGameCanvas({
   account,
-  bots,
+  players,
   mode,
   onMatchFinished,
   onExitToLobby,
@@ -349,6 +349,46 @@ export function ArenaGameCanvas({
       },
     };
 
+    const otherPlayers = players.filter((p) => p.profile.playerId !== account.profile.playerId);
+
+    const makeTransientBot = (slotLabel: string, index: number): PublicPlayerInfo => {
+      const charIds = ['vanguard', 'specter', 'bastion', 'medic'];
+      const weaponIds = ['pulse_rifle', 'tactical_sidearm'];
+      const charId = charIds[index % charIds.length];
+      return {
+        isBot: true,
+        profile: {
+          playerId: `AI-${slotLabel}-${index + 1}`,
+          username: `ArenaBot_${index + 1}`,
+          displayName: `Arena AI ${index + 1}`,
+          profilePictureUrl: null,
+          selectedAvatarId: charId,
+          bio: '',
+          profileBackgroundId: 'obsidian_grid',
+          profileThemeId: 'obsidian_steel',
+          favoriteWeaponId: weaponIds[index % weaponIds.length],
+          selectedCharacterId: charId,
+          badges: [],
+          showcaseBadges: [],
+          inventory: weaponIds,
+          coins: 0,
+          level: 1,
+          xp: 0,
+          createdAt: '',
+          updatedAt: '',
+        },
+        stats: {
+          totalKills: 0,
+          totalDeaths: 0,
+          totalWins: 0,
+          totalLosses: 0,
+          totalMatchesPlayed: 0,
+          winRate: 0,
+          updatedAt: '',
+        },
+      };
+    };
+
     const actors: Actor[] = [];
     actors.push(createActorFromPublic(userPublic, 'allies', 130, ARENA_H / 2, true));
 
@@ -357,20 +397,18 @@ export function ArenaGameCanvas({
         [140, 210],
         [140, 690],
       ];
-      bots.slice(0, 2).forEach((b, idx) => {
-        actors.push(
-          createActorFromPublic(b, 'allies', allySpawns[idx][0], allySpawns[idx][1], false)
-        );
+      allySpawns.forEach((spawn, idx) => {
+        const allyInfo = otherPlayers[idx] ?? makeTransientBot('ALLY', idx);
+        actors.push(createActorFromPublic(allyInfo, 'allies', spawn[0], spawn[1], false));
       });
       const rivalSpawns = [
         [ARENA_W - 140, 210],
         [ARENA_W - 130, ARENA_H / 2],
         [ARENA_W - 140, 690],
       ];
-      bots.slice(2, 5).forEach((b, idx) => {
-        actors.push(
-          createActorFromPublic(b, 'rivals', rivalSpawns[idx][0], rivalSpawns[idx][1], false)
-        );
+      rivalSpawns.forEach((spawn, idx) => {
+        const rivalInfo = otherPlayers[2 + idx] ?? makeTransientBot('RIVAL', idx + 2);
+        actors.push(createActorFromPublic(rivalInfo, 'rivals', spawn[0], spawn[1], false));
       });
     } else {
       const rivalSpawns = [
@@ -379,10 +417,9 @@ export function ArenaGameCanvas({
         [ARENA_W / 2, 110],
         [ARENA_W / 2, ARENA_H - 110],
       ];
-      bots.slice(0, 4).forEach((b, idx) => {
-        actors.push(
-          createActorFromPublic(b, 'rivals', rivalSpawns[idx][0], rivalSpawns[idx][1], false)
-        );
+      rivalSpawns.forEach((spawn, idx) => {
+        const rivalInfo = otherPlayers[idx] ?? makeTransientBot('SOLO', idx);
+        actors.push(createActorFromPublic(rivalInfo, 'rivals', spawn[0], spawn[1], false));
       });
     }
 
@@ -1203,7 +1240,7 @@ export function ArenaGameCanvas({
       canvas.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mouseup', onMouseUp);
     };
-  }, [account, bots, mode, onMatchFinished]);
+  }, [account, players, mode, onMatchFinished]);
 
   function handleToggleMute(): void {
     setMuted(soundEngine.toggleMute());

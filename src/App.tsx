@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Coins, LogOut, CheckCircle2, X } from 'lucide-react';
 import {
-  fetchBotRoster,
+  fetchRegisteredPlayers,
   fetchSession,
   logoutAccount,
   recordArenaMatch,
@@ -32,7 +32,7 @@ import { PlayerAvatar } from './components/PlayerAvatar.tsx';
 export default function App() {
   const [initializing, setInitializing] = useState(true);
   const [account, setAccount] = useState<PlayerAccountBundle | null>(null);
-  const [bots, setBots] = useState<PublicPlayerInfo[]>([]);
+  const [registeredPlayers, setRegisteredPlayers] = useState<PublicPlayerInfo[]>([]);
   const [view, setView] = useState<AppView>('lobby');
   const [selectedMode, setSelectedMode] = useState<GameMode>('skirmish_3v3');
   const [lastMatch, setLastMatch] = useState<MatchRecord | null>(null);
@@ -44,16 +44,21 @@ export default function App() {
     mode: 'register',
   });
 
+  async function refreshPlayers(): Promise<void> {
+    const players = await fetchRegisteredPlayers().catch(() => []);
+    setRegisteredPlayers(players);
+  }
+
   useEffect(() => {
     let active = true;
     (async () => {
       try {
         const [sessionRes, roster] = await Promise.all([
           fetchSession(),
-          fetchBotRoster().catch(() => []),
+          fetchRegisteredPlayers().catch(() => []),
         ]);
         if (!active) return;
-        setBots(roster);
+        setRegisteredPlayers(roster);
         if (sessionRes) {
           setAccount(sessionRes.account);
         }
@@ -76,6 +81,7 @@ export default function App() {
     setAccount(bundle);
     setAuthModal((prev) => ({ ...prev, open: false }));
     setView('lobby');
+    void refreshPlayers();
     if (welcomeMessage) {
       setToast(welcomeMessage);
     }
@@ -86,6 +92,7 @@ export default function App() {
     setAccount(null);
     setLastMatch(null);
     setView('lobby');
+    void refreshPlayers();
   }
 
   async function handleQuickLoadoutChange(patch: {
@@ -95,17 +102,20 @@ export default function App() {
     if (!account) return;
     const res = await updateProfile(patch);
     setAccount(res.account);
+    void refreshPlayers();
   }
 
   async function handleUploadAvatar(imageDataUrl: string): Promise<void> {
     const res = await uploadAvatarPicture(imageDataUrl);
     setAccount(res.account);
+    void refreshPlayers();
     setToast(res.message);
   }
 
   async function handleRemoveAvatar(): Promise<void> {
     const res = await removeAvatarPicture();
     setAccount(res.account);
+    void refreshPlayers();
     setToast(res.message);
   }
 
@@ -123,6 +133,7 @@ export default function App() {
       setAccount(res.bundle);
       setLastMatch(res.match);
       setView('results');
+      void refreshPlayers();
     } catch {
       setView('lobby');
     }
@@ -143,7 +154,7 @@ export default function App() {
     return (
       <>
         <LandingPage
-          bots={bots}
+          players={registeredPlayers}
           onOpenAuth={(mode) => setAuthModal({ open: true, mode })}
           onInspectPlayer={(p) => setInspectedPlayer(p)}
         />
@@ -162,7 +173,7 @@ export default function App() {
     return (
       <ArenaGameCanvas
         account={account}
-        bots={bots}
+        players={registeredPlayers}
         mode={selectedMode}
         onMatchFinished={(res) => void handleMatchFinished(res)}
         onExitToLobby={() => setView('lobby')}
@@ -275,7 +286,7 @@ export default function App() {
         {view === 'lobby' && (
           <LobbyView
             account={account}
-            bots={bots}
+            players={registeredPlayers}
             selectedMode={selectedMode}
             onChangeMode={setSelectedMode}
             onQuickLoadoutChange={handleQuickLoadoutChange}
@@ -297,7 +308,10 @@ export default function App() {
         {view === 'customize' && (
           <CustomizeProfileView
             account={account}
-            onAccountUpdated={setAccount}
+            onAccountUpdated={(updated) => {
+              setAccount(updated);
+              void refreshPlayers();
+            }}
             onOpenAvatarUpload={() => setAvatarModalOpen(true)}
             onRemoveAvatarPicture={handleRemoveAvatar}
           />
@@ -306,7 +320,10 @@ export default function App() {
         {view === 'settings' && (
           <SettingsView
             account={account}
-            onAccountUpdated={setAccount}
+            onAccountUpdated={(updated) => {
+              setAccount(updated);
+              void refreshPlayers();
+            }}
             onOpenAvatarUpload={() => setAvatarModalOpen(true)}
             onRemoveAvatarPicture={handleRemoveAvatar}
             onNavigate={setView}
@@ -318,7 +335,7 @@ export default function App() {
           <MatchResultsView
             account={account}
             match={lastMatch}
-            bots={bots}
+            players={registeredPlayers}
             onPlayAgain={() => setView('playing')}
             onReturnToLobby={() => setView('lobby')}
             onInspectPlayer={(p) => setInspectedPlayer(p)}

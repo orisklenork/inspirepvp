@@ -10,12 +10,12 @@ import type { PublicPlayerInfo } from '../types/game.ts';
 import { PlayerAvatar } from './PlayerAvatar.tsx';
 
 interface LandingPageProps {
-  bots: PublicPlayerInfo[];
+  players: PublicPlayerInfo[];
   onOpenAuth: (mode: 'login' | 'register') => void;
   onInspectPlayer: (player: PublicPlayerInfo) => void;
 }
 
-export function LandingPage({ bots, onOpenAuth, onInspectPlayer }: LandingPageProps) {
+export function LandingPage({ players, onOpenAuth, onInspectPlayer }: LandingPageProps) {
   return (
     <div className="min-h-screen bg-[#0B0F17] text-slate-100 flex flex-col">
       {/* Three-Zone Top Bar */}
@@ -318,53 +318,73 @@ export function LandingPage({ bots, onOpenAuth, onInspectPlayer }: LandingPagePr
         </div>
       </section>
 
-      {/* Section 04: Active Arena Roster Preview */}
+      {/* Section 04: Registered Operatives Roster */}
       <section id="roster" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 w-full">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
             <p className="text-xs font-semibold text-amber-400 tracking-wide">
-              04. Player Profiles &amp; Room Roster
+              04. Registered Operatives
             </p>
             <h2 className="text-3xl font-bold text-slate-100 mt-1">
               Customizable Player Cards Visible Everywhere
             </h2>
           </div>
-          <p className="text-xs text-slate-400">Click any operative card to inspect their profile</p>
+          {players.length > 0 && (
+            <p className="text-xs text-slate-400">Click any operative card to inspect their profile</p>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {bots.map((bot) => (
+        {players.length === 0 ? (
+          <div className="rounded-2xl bg-[#151C28] border border-white/10 p-8 text-center">
+            <p className="text-base font-semibold text-slate-100">No registered operatives yet.</p>
+            <p className="text-sm text-slate-400 mt-1.5 max-w-md mx-auto">
+              Be the first player to create an InspiredPVP account and appear on the live operative
+              roster.
+            </p>
             <button
-              key={bot.profile.playerId}
               type="button"
-              onClick={() => onInspectPlayer(bot)}
-              className="text-left rounded-2xl bg-[#151C28] border border-white/10 hover:border-amber-500/50 p-4 transition-colors cursor-pointer"
+              onClick={() => onOpenAuth('register')}
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm px-5 py-2.5 transition-colors cursor-pointer"
             >
-              <div className="flex items-center gap-3">
-                <PlayerAvatar
-                  profilePictureUrl={bot.profile.profilePictureUrl}
-                  selectedAvatarId={bot.profile.selectedAvatarId}
-                  profileThemeId={bot.profile.profileThemeId}
-                  displayName={bot.profile.displayName}
-                  size="md"
-                />
-                <div className="min-w-0">
-                  <p className="font-semibold text-sm text-slate-100 truncate">
-                    {bot.profile.displayName}
-                  </p>
-                  <p className="text-xs text-slate-400 font-mono truncate">
-                    @{bot.profile.username}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-300 tabular-nums">
-                <span>Lv {bot.profile.level}</span>
-                <span>{bot.stats.totalKills} Kills</span>
-                <span className="text-emerald-400">{bot.stats.winRate}% WR</span>
-              </div>
+              <span>Create First Account</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {players.map((player) => (
+              <button
+                key={player.profile.playerId}
+                type="button"
+                onClick={() => onInspectPlayer(player)}
+                className="text-left rounded-2xl bg-[#151C28] border border-white/10 hover:border-amber-500/50 p-4 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <PlayerAvatar
+                    profilePictureUrl={player.profile.profilePictureUrl}
+                    selectedAvatarId={player.profile.selectedAvatarId}
+                    profileThemeId={player.profile.profileThemeId}
+                    displayName={player.profile.displayName}
+                    size="md"
+                  />
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm text-slate-100 truncate">
+                      {player.profile.displayName}
+                    </p>
+                    <p className="text-xs text-slate-400 font-mono truncate">
+                      @{player.profile.username}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-300 tabular-nums">
+                  <span>Lv {player.profile.level}</span>
+                  <span>{player.stats.totalKills} Kills</span>
+                  <span className="text-emerald-400">{player.stats.winRate}% WR</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Bottom CTA */}
         <div className="mt-14 rounded-2xl bg-[#151C28] border border-amber-500/30 p-8 sm:p-10 flex flex-col md:flex-row md:items-center justify-between gap-6">

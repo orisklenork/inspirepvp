@@ -19,7 +19,7 @@ import { PlayerAvatar } from './PlayerAvatar.tsx';
 
 interface LobbyViewProps {
   account: PlayerAccountBundle;
-  bots: PublicPlayerInfo[];
+  players: PublicPlayerInfo[];
   selectedMode: GameMode;
   onChangeMode: (mode: GameMode) => void;
   onQuickLoadoutChange: (patch: {
@@ -34,7 +34,7 @@ interface LobbyViewProps {
 
 export function LobbyView({
   account,
-  bots,
+  players,
   selectedMode,
   onChangeMode,
   onQuickLoadoutChange,
@@ -102,8 +102,16 @@ export function LobbyView({
     },
   };
 
-  const allies = selectedMode === 'skirmish_3v3' ? [userAsPublic, ...bots.slice(0, 2)] : [userAsPublic];
-  const rivals = selectedMode === 'skirmish_3v3' ? bots.slice(2, 5) : bots.slice(0, 4);
+  const otherPlayers = players.filter((p) => p.profile.playerId !== profile.playerId);
+  const allies =
+    selectedMode === 'skirmish_3v3' ? [userAsPublic, ...otherPlayers.slice(0, 2)] : [userAsPublic];
+  const allyBotFillCount = selectedMode === 'skirmish_3v3' ? Math.max(0, 3 - allies.length) : 0;
+  const rivals =
+    selectedMode === 'skirmish_3v3'
+      ? otherPlayers.slice(2, 5)
+      : otherPlayers.slice(0, 4);
+  const rivalTargetCount = selectedMode === 'skirmish_3v3' ? 3 : 4;
+  const rivalBotFillCount = Math.max(0, rivalTargetCount - rivals.length);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
@@ -116,7 +124,7 @@ export function LobbyView({
               <div>
                 <h1 className="text-3xl font-bold text-slate-100">Multiplayer Arena Room</h1>
                 <p className="text-sm text-slate-400 mt-1">
-                  Select your combat mode and inspect squadmates before deploying.
+                  Select your combat mode and inspect registered operatives before deploying.
                 </p>
               </div>
               <div className="flex items-center gap-1 p-1 rounded-xl bg-[#0B0F17] border border-white/5 self-start">
@@ -151,7 +159,7 @@ export function LobbyView({
                 <div className="flex items-center justify-between text-xs font-semibold text-emerald-400 mb-2.5">
                   <span className="inline-flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5" />
-                    Allied Squad ({allies.length})
+                    Allied Squad ({selectedMode === 'skirmish_3v3' ? 3 : 1})
                   </span>
                   <span className="text-slate-400 font-normal">Click player to inspect</span>
                 </div>
@@ -194,12 +202,23 @@ export function LobbyView({
                       </button>
                     );
                   })}
+                  {Array.from({ length: allyBotFillCount }).map((_, i) => (
+                    <div
+                      key={`ally-ai-${i}`}
+                      className="rounded-xl bg-[#0B0F17]/60 border border-dashed border-white/10 p-3 text-xs text-slate-400"
+                    >
+                      <p className="font-semibold text-slate-300">Open Squad Slot · Arena AI Fill</p>
+                      <p className="text-slate-500 mt-0.5">
+                        Filled by an Arena AI teammate when match starts
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between text-xs font-semibold text-rose-400 mb-2.5">
-                  <span>Rival Squad ({rivals.length})</span>
+                  <span>Rival Squad ({rivalTargetCount})</span>
                   <span className="text-slate-400 font-normal">Active Matchmaking</span>
                 </div>
                 <div className="space-y-2.5">
@@ -234,6 +253,17 @@ export function LobbyView({
                       </button>
                     );
                   })}
+                  {Array.from({ length: rivalBotFillCount }).map((_, i) => (
+                    <div
+                      key={`rival-ai-${i}`}
+                      className="rounded-xl bg-[#0B0F17]/60 border border-dashed border-white/10 p-3 text-xs text-slate-400"
+                    >
+                      <p className="font-semibold text-slate-300">Open Rival Slot · Arena AI Fill</p>
+                      <p className="text-slate-500 mt-0.5">
+                        Filled by an Arena AI opponent when match starts
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

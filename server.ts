@@ -5,10 +5,10 @@ import path from 'node:path';
 import {
   authenticateUser,
   AVATARS_DIR,
-  BOT_ROSTER,
   changePassword,
   getAccountBundle,
   getPublicPlayerByPlayerId,
+  getRegisteredPlayers,
   isUsernameAvailable,
   recordMatchResult,
   registerAccount,
@@ -248,7 +248,7 @@ async function startServer(): Promise<void> {
   });
 
   app.get('/api/roster', (_req: Request, res: Response) => {
-    res.json({ bots: BOT_ROSTER });
+    res.json({ players: getRegisteredPlayers() });
   });
 
   app.get('/api/players/:playerId', (req: Request, res: Response) => {

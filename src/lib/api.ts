@@ -163,9 +163,9 @@ export async function recordArenaMatch(payload: {
   });
 }
 
-export async function fetchBotRoster(): Promise<PublicPlayerInfo[]> {
-  const res = await apiRequest<{ bots: PublicPlayerInfo[] }>('/api/roster', { method: 'GET' });
-  return res.bots;
+export async function fetchRegisteredPlayers(): Promise<PublicPlayerInfo[]> {
+  const res = await apiRequest<{ players: PublicPlayerInfo[] }>('/api/roster', { method: 'GET' });
+  return res.players ?? [];
 }
 
 export async function fetchPublicPlayer(playerId: string): Promise<PublicPlayerInfo> {
