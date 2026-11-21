@@ -732,6 +732,49 @@ export async function sbLeaveMatchmaking(userId: string): Promise<void> {
   }
 }
 
+function buildFastRoomSnapshot(row: DbRoomRow): GameRoom {
+  return {
+    code: row.code,
+    status: row.status,
+    mode: '1v1_duel',
+    maxKills: Number(row.max_kills) || DEFAULT_MAX_KILLS,
+    host: {
+      playerId: row.host_player_id,
+      username: 'Host',
+      displayName: 'Host',
+      profilePictureUrl: null,
+      selectedAvatarId: 'vanguard',
+      profileThemeId: 'amber_vanguard',
+      characterId: (row.host_state as LiveCombatActorState)?.characterId ?? 'vanguard',
+      weaponId: (row.host_state as LiveCombatActorState)?.weaponId ?? 'pulse_rifle',
+      level: 1,
+      ready: Boolean(row.host_ready),
+      kills: Number(row.host_kills) || 0,
+      deaths: Number(row.host_deaths) || 0,
+    },
+    guest: row.guest_player_id
+      ? {
+          playerId: row.guest_player_id,
+          username: 'Guest',
+          displayName: 'Guest',
+          profilePictureUrl: null,
+          selectedAvatarId: 'specter',
+          profileThemeId: 'sky_interceptor',
+          characterId: (row.guest_state as LiveCombatActorState)?.characterId ?? 'specter',
+          weaponId: (row.guest_state as LiveCombatActorState)?.weaponId ?? 'pulse_rifle',
+          level: 1,
+          ready: Boolean(row.guest_ready),
+          kills: Number(row.guest_kills) || 0,
+          deaths: Number(row.guest_deaths) || 0,
+        }
+      : null,
+    winnerPlayerId: row.winner_player_id,
+    startedAt: row.started_at,
+    endedAt: row.ended_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 export async function sbSyncRoomCombat(
   userId: string,
   rawCode: string,
@@ -785,13 +828,13 @@ export async function sbSyncRoomCombat(
             isHost ? 'host' : 'guest'
           );
 
+    const rawOpp = isHost ? row.guest_state : row.host_state;
     let oppState: LiveCombatActorState | null =
-      oppPlayerId &&
-      'playerId' in (isHost ? row.guest_state : row.host_state)
-        ? { ...(isHost ? (row.guest_state as LiveCombatActorState) : (row.host_state as LiveCombatActorState)) }
+      oppPlayerId && rawOpp && 'playerId' in rawOpp
+        ? { ...(rawOpp as LiveCombatActorState) }
         : null;
 
-    // Auto-respawn either player after 2.2s delay
+    // Auto-respawn own actor when respawn timer expires
     if (!myState.alive && nowMs >= myState.respawnAtMs) {
       const fresh = createSpawnActorState(
         myPlayerId,
@@ -801,25 +844,16 @@ export async function sbSyncRoomCombat(
       );
       myState = { ...fresh, seq: myState.seq, shotSeq: myState.shotSeq };
     }
-    if (oppState && !oppState.alive && nowMs >= oppState.respawnAtMs) {
-      const freshOpp = createSpawnActorState(
-        oppState.playerId,
-        oppState.characterId,
-        oppState.weaponId,
-        isHost ? 'guest' : 'host'
-      );
-      oppState = { ...freshOpp, seq: oppState.seq, shotSeq: oppState.shotSeq };
-    }
 
-    // Update local pose if alive
+    // Update only local pose & velocity
     if (myState.alive) {
       myState.x = clampCoord(input.x, -ARENA_HALF_EXTENT, ARENA_HALF_EXTENT, myState.x);
-      myState.y = clampCoord(input.y, 0, 4, 0);
+      myState.y = clampCoord(input.y, 0, 5, 0);
       myState.z = clampCoord(input.z, -ARENA_HALF_EXTENT, ARENA_HALF_EXTENT, myState.z);
-      myState.yaw = clampCoord(input.yaw, -Math.PI * 4, Math.PI * 4, myState.yaw);
-      myState.pitch = clampCoord(input.pitch, -1.4, 1.4, myState.pitch);
-      myState.vx = clampCoord(input.vx, -20, 20, 0);
-      myState.vz = clampCoord(input.vz, -20, 20, 0);
+      myState.yaw = clampCoord(input.yaw, -Math.PI * 8, Math.PI * 8, myState.yaw);
+      myState.pitch = clampCoord(input.pitch, -1.45, 1.45, myState.pitch);
+      myState.vx = clampCoord(input.vx, -25, 25, 0);
+      myState.vz = clampCoord(input.vz, -25, 25, 0);
       myState.crouched = Boolean(input.crouched);
       myState.sprinting = Boolean(input.sprinting);
       myState.aiming = Boolean(input.aiming);
@@ -840,8 +874,11 @@ export async function sbSyncRoomCombat(
     let endedAt = row.ended_at;
 
     const events: CombatEvent[] = Array.isArray(row.combat_events)
-      ? row.combat_events.filter((ev) => nowMs - ev.ts < 3500).slice(-16)
+      ? row.combat_events.filter((ev) => nowMs - ev.ts < 3500).slice(-14)
       : [];
+
+    let hasShotUpdate = false;
+    let damagedOpponent = false;
 
     if (
       status === 'playing' &&
@@ -849,16 +886,17 @@ export async function sbSyncRoomCombat(
       input.shotEvent &&
       input.shotEvent.shotSeq > myState.shotSeq
     ) {
+      hasShotUpdate = true;
       myState.shotSeq = input.shotEvent.shotSeq;
       const origin: [number, number, number] = [
-        clampCoord(input.shotEvent.origin[0], -30, 30, myState.x),
-        clampCoord(input.shotEvent.origin[1], 0, 5, 1.4),
-        clampCoord(input.shotEvent.origin[2], -30, 30, myState.z),
+        clampCoord(input.shotEvent.origin[0], -32, 32, myState.x),
+        clampCoord(input.shotEvent.origin[1], 0, 6, 1.4),
+        clampCoord(input.shotEvent.origin[2], -32, 32, myState.z),
       ];
       const end: [number, number, number] = [
-        clampCoord(input.shotEvent.end[0], -60, 60, myState.x),
-        clampCoord(input.shotEvent.end[1], -5, 20, 1.4),
-        clampCoord(input.shotEvent.end[2], -60, 60, myState.z),
+        clampCoord(input.shotEvent.end[0], -70, 70, myState.x),
+        clampCoord(input.shotEvent.end[1], -5, 25, 1.4),
+        clampCoord(input.shotEvent.end[2], -70, 70, myState.z),
       ];
       myState.shotOrigin = origin;
       myState.shotEnd = end;
@@ -873,7 +911,8 @@ export async function sbSyncRoomCombat(
       });
 
       if (input.shotEvent.hitOpponent && oppState && oppState.alive) {
-        const dmg = Math.max(1, Math.min(120, Math.round(Number(input.shotEvent.damage) || 0)));
+        damagedOpponent = true;
+        const dmg = Math.max(1, Math.min(180, Math.round(Number(input.shotEvent.damage) || 0)));
         oppState.hp = Math.max(0, oppState.hp - dmg);
         events.push({
           id: crypto.randomUUID(),
@@ -915,19 +954,25 @@ export async function sbSyncRoomCombat(
       }
     }
 
+    // Column-isolated PATCH: never overwrite the opponent's position column unless applying damage!
     const patch: Record<string, unknown> = {
-      status,
-      host_kills: hostKills,
-      guest_kills: guestKills,
-      host_deaths: hostDeaths,
-      guest_deaths: guestDeaths,
-      host_state: isHost ? myState : oppState ?? row.host_state,
-      guest_state: isHost ? oppState ?? row.guest_state : myState,
-      combat_events: events.slice(-20),
-      winner_player_id: winnerPlayerId,
-      ended_at: endedAt,
+      [isHost ? 'host_state' : 'guest_state']: myState,
       updated_at: new Date(nowMs).toISOString(),
     };
+
+    if (hasShotUpdate) {
+      patch.combat_events = events.slice(-18);
+    }
+    if (damagedOpponent && oppState) {
+      patch[isHost ? 'guest_state' : 'host_state'] = oppState;
+      patch.status = status;
+      patch.host_kills = hostKills;
+      patch.guest_kills = guestKills;
+      patch.host_deaths = hostDeaths;
+      patch.guest_deaths = guestDeaths;
+      patch.winner_player_id = winnerPlayerId;
+      patch.ended_at = endedAt;
+    }
 
     const updatedRows = await sbRest<DbRoomRow[]>(
       `game_rooms?code=eq.${encodeURIComponent(code)}`,
@@ -938,12 +983,18 @@ export async function sbSyncRoomCombat(
       }
     );
 
-    const hydrated = await hydrateRoom(updatedRows[0]);
+    const finalRow = updatedRows[0] ?? row;
+    const latestOpp = isHost ? finalRow.guest_state : finalRow.host_state;
+    const resolvedOpp =
+      oppPlayerId && latestOpp && 'playerId' in latestOpp
+        ? (latestOpp as LiveCombatActorState)
+        : oppState;
+
     return {
-      room: hydrated,
+      room: buildFastRoomSnapshot(finalRow),
       selfState: myState,
-      opponentState: oppState,
-      events,
+      opponentState: resolvedOpp,
+      events: Array.isArray(finalRow.combat_events) ? finalRow.combat_events : events,
     };
   } catch (err) {
     throw wrapMultiplayerError(err);

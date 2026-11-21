@@ -25,23 +25,31 @@ export interface RangeTargetEntity {
   downUntilMs: number;
 }
 
+export interface RainSystem {
+  lines: THREE.LineSegments;
+  positions: Float32Array;
+  speeds: Float32Array;
+  count: number;
+  ambientLight: THREE.HemisphereLight;
+  moonLight: THREE.DirectionalLight;
+  baseSkyColor: THREE.Color;
+  flashStrength: number;
+  nextLightningAt: number;
+}
+
 export const ARENA_RADIUS = 27;
 
 export const ARENA_OBSTACLES: ArenaObstacleBox[] = [
-  // Central waist-high tactical cover barriers (stand to shoot over, crouch for full cover!)
   { id: 'mid_w', label: 'Mid West Barrier', minX: -5.2, maxX: -1.8, minY: 0, maxY: 1.12, minZ: -0.7, maxZ: 0.7 },
   { id: 'mid_e', label: 'Mid East Barrier', minX: 1.8, maxX: 5.2, minY: 0, maxY: 1.12, minZ: -0.7, maxZ: 0.7 },
   { id: 'mid_pillar', label: 'Center Pillar', minX: -1.1, maxX: 1.1, minY: 0, maxY: 2.35, minZ: -1.1, maxZ: 1.1 },
 
-  // Symmetrical shipping containers (tall flank cover)
   { id: 'cont_nw', label: 'West Container', minX: -14.5, maxX: -11.4, minY: 0, maxY: 2.75, minZ: -8.5, maxZ: -1.5 },
   { id: 'cont_se', label: 'East Container', minX: 11.4, maxX: 14.5, minY: 0, maxY: 2.75, minZ: 1.5, maxZ: 8.5 },
 
-  // Spawn lane low cover barriers (protects spawns while enabling peek angles)
   { id: 'spawn_n', label: 'North Spawn Barrier', minX: -4.2, maxX: 1.2, minY: 0, maxY: 1.15, minZ: -14.6, maxZ: -13.4 },
   { id: 'spawn_s', label: 'South Spawn Barrier', minX: -1.2, maxX: 4.2, minY: 0, maxY: 1.15, minZ: 13.4, maxZ: 14.6 },
 
-  // Side crate stacks
   { id: 'crate_ne', label: 'NE Crate Stack', minX: 7.2, maxX: 9.8, minY: 0, maxY: 1.65, minZ: -10.8, maxZ: -8.2 },
   { id: 'crate_sw', label: 'SW Crate Stack', minX: -9.8, maxX: -7.2, minY: 0, maxY: 1.65, minZ: 8.2, maxZ: 10.8 },
   { id: 'crate_w_low', label: 'West Crate', minX: -18.5, maxX: -16.2, minY: 0, maxY: 1.3, minZ: 3.5, maxZ: 5.8 },
@@ -72,45 +80,78 @@ export function buildArenaEnvironment(
   scene: THREE.Scene,
   maxAnisotropy: number,
   trainingRange: boolean
-): RangeTargetEntity[] {
-  // Warm Tactical Daylight / Golden-Hour Sky & Fog
-  const skyColor = new THREE.Color(0x88aac8);
-  scene.background = skyColor;
-  scene.fog = new THREE.FogExp2(0x88aac8, 0.0115);
+): { rangeTargets: RangeTargetEntity[]; rain: RainSystem } {
+  // Atmospheric Stormy Night Sky & Horizon Fog
+  const baseSkyColor = new THREE.Color(0x070b14);
+  scene.background = baseSkyColor.clone();
+  scene.fog = new THREE.FogExp2(0x080d18, 0.0185);
 
-  const hemi = new THREE.HemisphereLight(0xcbe6ff, 0x3b362e, 0.95);
-  scene.add(hemi);
+  // Cool night sky / dark ground fill
+  const ambientLight = new THREE.HemisphereLight(0x3a527a, 0x0b0e16, 0.85);
+  scene.add(ambientLight);
 
-  const sun = new THREE.DirectionalLight(0xfff1d6, 2.15);
-  sun.position.set(24, 38, 18);
-  sun.castShadow = true;
-  sun.shadow.mapSize.set(1024, 1024);
-  sun.shadow.camera.near = 4;
-  sun.shadow.camera.far = 110;
-  sun.shadow.camera.left = -34;
-  sun.shadow.camera.right = 34;
-  sun.shadow.camera.top = 34;
-  sun.shadow.camera.bottom = -34;
-  sun.shadow.bias = -0.0008;
-  scene.add(sun);
+  // Cool Moonlight directional key light with crisp shadows
+  const moonLight = new THREE.DirectionalLight(0xa3c4f3, 1.55);
+  moonLight.position.set(22, 36, 18);
+  moonLight.castShadow = true;
+  moonLight.shadow.mapSize.set(1024, 1024);
+  moonLight.shadow.camera.near = 4;
+  moonLight.shadow.camera.far = 100;
+  moonLight.shadow.camera.left = -32;
+  moonLight.shadow.camera.right = 32;
+  moonLight.shadow.camera.top = 32;
+  moonLight.shadow.camera.bottom = -32;
+  moonLight.shadow.bias = -0.0007;
+  scene.add(moonLight);
 
-  // Asphalt courtyard floor
+  // Warm tungsten compound floodlights in opposing corners for rich cinematic contrast
+  const floodPositions: [number, number, number][] = [
+    [-22, 9.5, -22],
+    [22, 9.5, 22],
+  ];
+  const mastMat = new THREE.MeshStandardMaterial({ color: 0x1e2530, metalness: 0.7, roughness: 0.45 });
+  const lampGlowMat = new THREE.MeshBasicMaterial({ color: 0xffb347 });
+  floodPositions.forEach(([fx, fy, fz]) => {
+    const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, fy, 8), mastMat);
+    mast.position.set(fx, fy * 0.5, fz);
+    scene.add(mast);
+
+    const head = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.45, 0.55), lampGlowMat);
+    head.position.set(fx, fy, fz);
+    head.lookAt(0, 0, 0);
+    scene.add(head);
+
+    const pt = new THREE.PointLight(0xffa94d, 26, 36, 1.6);
+    pt.position.set(fx * 0.92, fy - 0.5, fz * 0.92);
+    scene.add(pt);
+  });
+
+  // Rain-slick wet dark asphalt courtyard
   const floorTex = createCanvasTexture(
     (ctx, w, h) => {
-      ctx.fillStyle = '#3c434f';
+      ctx.fillStyle = '#151922';
       ctx.fillRect(0, 0, w, h);
-      for (let i = 0; i < 4500; i++) {
-        const x = (i * 73) % w;
-        const y = (i * 197) % h;
-        ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.06)';
-        ctx.fillRect(x, y, 3, 3);
+      for (let i = 0; i < 4200; i++) {
+        const x = (i * 79) % w;
+        const y = (i * 193) % h;
+        ctx.fillStyle = i % 3 === 0 ? 'rgba(120,160,210,0.045)' : 'rgba(0,0,0,0.12)';
+        ctx.fillRect(x, y, 4, 4);
       }
-      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-      ctx.lineWidth = 4;
+      // Wet puddle patches
+      ctx.fillStyle = 'rgba(20, 32, 52, 0.35)';
+      ctx.beginPath();
+      ctx.ellipse(160, 210, 85, 52, 0.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(380, 360, 95, 60, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.035)';
+      ctx.lineWidth = 3;
       ctx.strokeRect(2, 2, w - 4, h - 4);
     },
-    14,
-    14,
+    12,
+    12,
     maxAnisotropy
   );
 
@@ -118,44 +159,44 @@ export function buildArenaEnvironment(
     new THREE.PlaneGeometry(ARENA_RADIUS * 2, ARENA_RADIUS * 2),
     new THREE.MeshStandardMaterial({
       map: floorTex,
-      roughness: 0.9,
-      metalness: 0.05,
+      roughness: 0.32,
+      metalness: 0.28,
     })
   );
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // Extended surrounding desert/industrial ground skirt
+  // Extended surrounding dark wasteland ground
   const outerGround = new THREE.Mesh(
-    new THREE.RingGeometry(ARENA_RADIUS * 1.35, 220, 48),
-    new THREE.MeshStandardMaterial({ color: 0x5c5347, roughness: 0.95 })
+    new THREE.RingGeometry(ARENA_RADIUS * 1.32, 240, 48),
+    new THREE.MeshStandardMaterial({ color: 0x0c1018, roughness: 0.92 })
   );
   outerGround.rotation.x = -Math.PI / 2;
   outerGround.position.y = -0.04;
   scene.add(outerGround);
 
-  // Center lane tactical painted stripes
-  const laneMarkMat = new THREE.MeshBasicMaterial({ color: 0xd97706, transparent: true, opacity: 0.45 });
+  // Glowing center tactical zone ring
+  const laneMarkMat = new THREE.MeshBasicMaterial({ color: 0xff7a2f, transparent: true, opacity: 0.42 });
   const centerCircle = new THREE.Mesh(new THREE.RingGeometry(4.8, 5.05, 48), laneMarkMat);
   centerCircle.rotation.x = -Math.PI / 2;
-  centerCircle.position.y = 0.01;
+  centerCircle.position.y = 0.012;
   scene.add(centerCircle);
 
-  // Textures for cover
+  // Concrete hazard Jersey barriers
   const concreteTex = createCanvasTexture(
     (ctx, w, h) => {
-      ctx.fillStyle = '#737a84';
+      ctx.fillStyle = '#333b48';
       ctx.fillRect(0, 0, w, h);
-      for (let i = 0; i < 1800; i++) {
-        ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)';
+      for (let i = 0; i < 2000; i++) {
+        ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.10)';
         ctx.fillRect((i * 59) % w, (i * 113) % h, 4, 4);
       }
-      ctx.fillStyle = '#e07b24';
-      ctx.fillRect(0, 0, w, 28);
-      ctx.fillStyle = '#202632';
+      ctx.fillStyle = '#ea6a1f';
+      ctx.fillRect(0, 0, w, 26);
+      ctx.fillStyle = '#12161f';
       for (let x = 0; x < w; x += 48) {
-        ctx.fillRect(x, 0, 24, 28);
+        ctx.fillRect(x, 0, 24, 26);
       }
     },
     1,
@@ -165,12 +206,12 @@ export function buildArenaEnvironment(
 
   const containerTexRed = createCanvasTexture(
     (ctx, w, h) => {
-      ctx.fillStyle = '#99382a';
+      ctx.fillStyle = '#63221b';
       ctx.fillRect(0, 0, w, h);
       for (let x = 0; x < w; x += 28) {
-        ctx.fillStyle = 'rgba(0,0,0,0.22)';
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
         ctx.fillRect(x, 0, 10, h);
-        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.fillStyle = 'rgba(255,255,255,0.06)';
         ctx.fillRect(x + 12, 0, 4, h);
       }
     },
@@ -181,12 +222,12 @@ export function buildArenaEnvironment(
 
   const containerTexBlue = createCanvasTexture(
     (ctx, w, h) => {
-      ctx.fillStyle = '#28527a';
+      ctx.fillStyle = '#1b3552';
       ctx.fillRect(0, 0, w, h);
       for (let x = 0; x < w; x += 28) {
-        ctx.fillStyle = 'rgba(0,0,0,0.22)';
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
         ctx.fillRect(x, 0, 10, h);
-        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.fillStyle = 'rgba(255,255,255,0.06)';
         ctx.fillRect(x + 12, 0, 4, h);
       }
     },
@@ -197,9 +238,9 @@ export function buildArenaEnvironment(
 
   const crateTex = createCanvasTexture(
     (ctx, w, h) => {
-      ctx.fillStyle = '#8b6a44';
+      ctx.fillStyle = '#473623';
       ctx.fillRect(0, 0, w, h);
-      ctx.strokeStyle = '#4e3922';
+      ctx.strokeStyle = '#241a10';
       ctx.lineWidth = 22;
       ctx.strokeRect(11, 11, w - 22, h - 22);
       ctx.beginPath();
@@ -222,13 +263,13 @@ export function buildArenaEnvironment(
 
     let mat: THREE.MeshStandardMaterial;
     if (box.id.startsWith('cont_nw')) {
-      mat = new THREE.MeshStandardMaterial({ map: containerTexRed, roughness: 0.55, metalness: 0.45 });
+      mat = new THREE.MeshStandardMaterial({ map: containerTexRed, roughness: 0.36, metalness: 0.55 });
     } else if (box.id.startsWith('cont_se')) {
-      mat = new THREE.MeshStandardMaterial({ map: containerTexBlue, roughness: 0.55, metalness: 0.45 });
+      mat = new THREE.MeshStandardMaterial({ map: containerTexBlue, roughness: 0.36, metalness: 0.55 });
     } else if (box.id.startsWith('crate')) {
-      mat = new THREE.MeshStandardMaterial({ map: crateTex, roughness: 0.85, metalness: 0.05 });
+      mat = new THREE.MeshStandardMaterial({ map: crateTex, roughness: 0.72, metalness: 0.08 });
     } else {
-      mat = new THREE.MeshStandardMaterial({ map: concreteTex, roughness: 0.82, metalness: 0.1 });
+      mat = new THREE.MeshStandardMaterial({ map: concreteTex, roughness: 0.62, metalness: 0.15 });
     }
 
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat);
@@ -238,10 +279,10 @@ export function buildArenaEnvironment(
     scene.add(mesh);
   }
 
-  // Compound perimeter walls
-  const wallMat = new THREE.MeshStandardMaterial({ color: 0x4b5362, roughness: 0.85 });
+  // Perimeter security wall with glowing warning strip
+  const wallMat = new THREE.MeshStandardMaterial({ color: 0x1b2230, roughness: 0.75, metalness: 0.25 });
   const wallThickness = 1.4;
-  const wallHeight = 4.4;
+  const wallHeight = 4.2;
   const wallSpan = ARENA_RADIUS * 2 + wallThickness;
 
   [
@@ -256,26 +297,62 @@ export function buildArenaEnvironment(
     scene.add(wall);
   });
 
-  // Distant skyline silhouette blocks for depth outside arena walls
-  const skylineMat = new THREE.MeshStandardMaterial({ color: 0x3b4454, roughness: 0.9 });
+  // Distant Night Skyline with lit city window grids (atmospheric depth)
+  const buildingTex = createCanvasTexture(
+    (ctx, w, h) => {
+      ctx.fillStyle = '#0c111c';
+      ctx.fillRect(0, 0, w, h);
+      for (let y = 24; y < h - 24; y += 26) {
+        for (let x = 20; x < w - 20; x += 28) {
+          if (((x * 13 + y * 29) % 7) < 2) {
+            ctx.fillStyle = (x + y) % 5 === 0 ? '#ff9f43' : '#38bdf8';
+            ctx.fillRect(x, y, 12, 10);
+          }
+        }
+      }
+    },
+    1,
+    2,
+    maxAnisotropy
+  );
+  const skylineMat = new THREE.MeshStandardMaterial({
+    map: buildingTex,
+    emissive: 0x162238,
+    emissiveMap: buildingTex,
+    emissiveIntensity: 0.65,
+    roughness: 0.85,
+  });
   [
-    [-48, 12, -52, 14, 24, 14],
-    [52, 16, -46, 18, 32, 16],
-    [-54, 9, 44, 16, 18, 16],
-    [48, 14, 54, 15, 28, 15],
-    [0, 11, -64, 24, 22, 12],
+    [-52, 18, -56, 16, 36, 16],
+    [54, 22, -52, 18, 44, 18],
+    [-56, 14, 48, 16, 28, 16],
+    [52, 19, 56, 16, 38, 16],
+    [0, 16, -68, 26, 32, 14],
+    [-28, 13, 66, 20, 26, 14],
   ].forEach(([x, y, z, w, h, d]) => {
     const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), skylineMat);
     b.position.set(x, y, z);
     scene.add(b);
   });
 
-  // Range targets (only spawned in Tactical Firing Range mode)
-  const targets: RangeTargetEntity[] = [];
+  // Tactical 3D Firing Range Targets
+  const rangeTargets: RangeTargetEntity[] = [];
   if (trainingRange) {
-    const standMat = new THREE.MeshStandardMaterial({ color: 0x222834, metalness: 0.7, roughness: 0.4 });
-    const plateMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.4, metalness: 0.3 });
-    const headMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.35, metalness: 0.3 });
+    const standMat = new THREE.MeshStandardMaterial({ color: 0x1a202c, metalness: 0.7, roughness: 0.4 });
+    const plateMat = new THREE.MeshStandardMaterial({
+      color: 0xff6b2b,
+      emissive: 0x6b2000,
+      emissiveIntensity: 0.4,
+      roughness: 0.35,
+      metalness: 0.3,
+    });
+    const headMat = new THREE.MeshStandardMaterial({
+      color: 0xfacc15,
+      emissive: 0x6b5500,
+      emissiveIntensity: 0.45,
+      roughness: 0.35,
+      metalness: 0.3,
+    });
 
     const targetConfigs = [
       { id: 't1', x: -6, z: -12, moving: false },
@@ -305,7 +382,7 @@ export function buildArenaEnvironment(
       g.add(head);
 
       scene.add(g);
-      targets.push({
+      rangeTargets.push({
         id: cfg.id,
         group: g,
         headMesh: head,
@@ -321,7 +398,124 @@ export function buildArenaEnvironment(
     });
   }
 
-  return targets;
+  // Falling 3D Rain Streaks System (Single draw call!)
+  const rainCount = 1200;
+  const positions = new Float32Array(rainCount * 2 * 3);
+  const speeds = new Float32Array(rainCount);
+  for (let i = 0; i < rainCount; i++) {
+    const rx = (Math.random() - 0.5) * 38;
+    const ry = Math.random() * 18;
+    const rz = (Math.random() - 0.5) * 38;
+    speeds[i] = 17 + Math.random() * 8;
+    const idx = i * 6;
+    positions[idx] = rx;
+    positions[idx + 1] = ry;
+    positions[idx + 2] = rz;
+    positions[idx + 3] = rx - 0.08;
+    positions[idx + 4] = ry - 0.65;
+    positions[idx + 5] = rz - 0.05;
+  }
+  const rainGeo = new THREE.BufferGeometry();
+  rainGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const rainMat = new THREE.LineBasicMaterial({
+    color: 0x9ec5ff,
+    transparent: true,
+    opacity: 0.36,
+    depthWrite: false,
+  });
+  const rainLines = new THREE.LineSegments(rainGeo, rainMat);
+  rainLines.frustumCulled = false;
+  scene.add(rainLines);
+
+  return {
+    rangeTargets,
+    rain: {
+      lines: rainLines,
+      positions,
+      speeds,
+      count: rainCount,
+      ambientLight,
+      moonLight,
+      baseSkyColor,
+      flashStrength: 0,
+      nextLightningAt: performance.now() + 9000,
+    },
+  };
+}
+
+export function updateRainSystem(
+  scene: THREE.Scene,
+  rain: RainSystem,
+  centerX: number,
+  centerZ: number,
+  dt: number,
+  nowMs: number,
+  onLightning?: () => void
+): void {
+  const pos = rain.positions;
+  const n = rain.count;
+  const span = 38;
+  const half = span * 0.5;
+
+  for (let i = 0; i < n; i++) {
+    const idx = i * 6;
+    const fall = rain.speeds[i] * dt;
+    pos[idx + 1] -= fall;
+    pos[idx + 4] -= fall;
+    pos[idx] -= 1.4 * dt;
+    pos[idx + 3] -= 1.4 * dt;
+
+    if (pos[idx + 1] < 0) {
+      const rx = centerX + (Math.random() - 0.5) * span;
+      const rz = centerZ + (Math.random() - 0.5) * span;
+      const ry = 14 + Math.random() * 6;
+      pos[idx] = rx;
+      pos[idx + 1] = ry;
+      pos[idx + 2] = rz;
+      pos[idx + 3] = rx - 0.08;
+      pos[idx + 4] = ry - 0.65;
+      pos[idx + 5] = rz - 0.05;
+    } else {
+      // Keep rain bubble centered around moving player
+      if (pos[idx] < centerX - half) {
+        pos[idx] += span;
+        pos[idx + 3] += span;
+      } else if (pos[idx] > centerX + half) {
+        pos[idx] -= span;
+        pos[idx + 3] -= span;
+      }
+      if (pos[idx + 2] < centerZ - half) {
+        pos[idx + 2] += span;
+        pos[idx + 5] += span;
+      } else if (pos[idx + 2] > centerZ + half) {
+        pos[idx + 2] -= span;
+        pos[idx + 5] -= span;
+      }
+    }
+  }
+  (rain.lines.geometry.attributes.position as THREE.BufferAttribute).needsUpdate = true;
+
+  // Periodic subtle lightning storm flash
+  if (nowMs >= rain.nextLightningAt) {
+    rain.flashStrength = 1.0;
+    rain.nextLightningAt = nowMs + 13000 + Math.random() * 14000;
+    onLightning?.();
+  }
+  if (rain.flashStrength > 0.01) {
+    rain.flashStrength = THREE.MathUtils.damp(rain.flashStrength, 0, 9, dt);
+    rain.moonLight.intensity = 1.55 + rain.flashStrength * 3.8;
+    rain.ambientLight.intensity = 0.85 + rain.flashStrength * 1.4;
+    if (scene.background instanceof THREE.Color) {
+      scene.background.setRGB(
+        0.027 + rain.flashStrength * 0.22,
+        0.043 + rain.flashStrength * 0.28,
+        0.078 + rain.flashStrength * 0.36
+      );
+    }
+  } else {
+    rain.moonLight.intensity = 1.55;
+    rain.ambientLight.intensity = 0.85;
+  }
 }
 
 export function resolvePlayerObstacleCollision(
@@ -345,7 +539,6 @@ export function resolvePlayerObstacleCollision(
         nx += (dx / dist) * push;
         nz += (dz / dist) * push;
       } else {
-        // Inside AABB fallback push out nearest edge
         const dLeft = Math.abs(nx - b.minX);
         const dRight = Math.abs(b.maxX - nx);
         const dTop = Math.abs(nz - b.minZ);

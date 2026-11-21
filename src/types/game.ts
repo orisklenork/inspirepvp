@@ -1,9 +1,17 @@
-export type GameMode = '1v1_duel' | 'training_range' | 'skirmish_3v3' | 'solo_survival';
+export type GameMode =
+  | '1v1_duel'
+  | 'zombie_survival'
+  | 'training_range'
+  | 'skirmish_3v3'
+  | 'solo_survival';
+
+export type CameraPerspective = 'fps' | 'tps';
 
 export type AppView =
   | 'lobby'
   | 'playing'
   | 'results'
+  | 'shop'
   | 'profile'
   | 'customize'
   | 'settings';

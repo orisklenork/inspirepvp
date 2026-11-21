@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS public.player_statistics (
 CREATE TABLE IF NOT EXISTS public.matches (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  mode TEXT NOT NULL CHECK (mode IN ('1v1_duel', 'training_range', 'skirmish_3v3', 'solo_survival')),
+  mode TEXT NOT NULL CHECK (mode IN ('1v1_duel', 'zombie_survival', 'training_range', 'skirmish_3v3', 'solo_survival')),
   outcome TEXT NOT NULL CHECK (outcome IN ('victory', 'defeat')),
   kills INTEGER NOT NULL DEFAULT 0 CHECK (kills >= 0),
   deaths INTEGER NOT NULL DEFAULT 0 CHECK (deaths >= 0),
@@ -63,11 +63,11 @@ CREATE TABLE IF NOT EXISTS public.matches (
   played_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Ensure existing databases also accept 1v1_duel and training_range modes
+-- Ensure existing databases also accept 1v1_duel, zombie_survival, and training_range modes
 ALTER TABLE public.matches DROP CONSTRAINT IF EXISTS matches_mode_check;
 ALTER TABLE public.matches
   ADD CONSTRAINT matches_mode_check
-  CHECK (mode IN ('1v1_duel', 'training_range', 'skirmish_3v3', 'solo_survival'));
+  CHECK (mode IN ('1v1_duel', 'zombie_survival', 'training_range', 'skirmish_3v3', 'solo_survival'));
 
 CREATE INDEX IF NOT EXISTS idx_profiles_player_id ON public.profiles(player_id);
 CREATE INDEX IF NOT EXISTS idx_matches_user_played ON public.matches(user_id, played_at DESC);

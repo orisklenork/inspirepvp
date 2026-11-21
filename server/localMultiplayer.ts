@@ -671,7 +671,7 @@ export function localSyncRoomCombat(
     });
 
     if (input.shotEvent.hitOpponent && oppState && oppState.alive) {
-      const dmg = Math.max(1, Math.min(120, Math.round(Number(input.shotEvent.damage) || 0)));
+      const dmg = Math.max(1, Math.min(180, Math.round(Number(input.shotEvent.damage) || 0)));
       oppState.hp = Math.max(0, oppState.hp - dmg);
       rec.combatEvents.push({
         id: crypto.randomUUID(),

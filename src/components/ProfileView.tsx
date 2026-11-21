@@ -21,6 +21,8 @@ function formatModeLabel(mode: GameMode): string {
   switch (mode) {
     case '1v1_duel':
       return '1v1 Arena Duel';
+    case 'zombie_survival':
+      return 'Zombie Outbreak';
     case 'training_range':
       return '3D Firing Range';
     case 'skirmish_3v3':

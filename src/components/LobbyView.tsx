@@ -16,6 +16,8 @@ import {
   Loader2,
   X,
   UserCheck,
+  Skull,
+  ShoppingBag,
 } from 'lucide-react';
 import {
   CHARACTERS,
@@ -502,6 +504,30 @@ export function LobbyView({
                 </div>
               </div>
 
+              {/* Zombie Outbreak Survival Card */}
+              <div className="clay-panel p-5 border-rose-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <span className="text-xs font-mono font-bold text-rose-400 inline-flex items-center gap-1.5">
+                    <Skull className="w-3.5 h-3.5" />
+                    <span>NIGHT STORM · WAVE HORDE</span>
+                  </span>
+                  <h2 className="font-display text-2xl font-bold text-white mt-0.5">
+                    Zombie Outbreak Survival (5 Waves)
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-1 max-w-xl leading-relaxed">
+                    Deploy solo into the rain-soaked night courtyard in First-Person view, eliminate 5 escalating waves of Shamblers, Sprinters, and Brutes, and farm Coins for new guns.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onEnterBattle('zombie_survival', null)}
+                  className="clay-btn-danger px-6 py-3.5 text-sm font-extrabold inline-flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                >
+                  <Skull className="w-4 h-4" />
+                  <span>Deploy Zombie Survival</span>
+                </button>
+              </div>
+
               {/* 3. Join Room by Code + Open Rooms */}
               <div className="clay-panel p-5 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -580,14 +606,24 @@ export function LobbyView({
                   Equip your operative and primary 3D gun, or test your controls in the Firing Range
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => onEnterBattle('training_range', null)}
-                className="clay-btn-secondary px-4 py-2.5 text-xs font-bold inline-flex items-center gap-2 cursor-pointer self-start"
-              >
-                <Target className="w-4 h-4 text-orange-400" />
-                <span>Open 3D Firing Range</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2.5 self-start">
+                <button
+                  type="button"
+                  onClick={() => onNavigate('shop')}
+                  className="clay-btn-primary px-4 py-2.5 text-xs font-extrabold inline-flex items-center gap-1.5 cursor-pointer"
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  <span>Open Gun Shop</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onEnterBattle('training_range', null)}
+                  className="clay-btn-secondary px-4 py-2.5 text-xs font-bold inline-flex items-center gap-2 cursor-pointer"
+                >
+                  <Target className="w-4 h-4 text-orange-400" />
+                  <span>3D Firing Range</span>
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

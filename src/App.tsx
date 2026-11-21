@@ -32,6 +32,7 @@ import { CustomizeProfileView } from './components/CustomizeProfileView.tsx';
 import { SettingsView } from './components/SettingsView.tsx';
 import { Arena3DView } from './components/Arena3DView.tsx';
 import { MatchResultsView } from './components/MatchResultsView.tsx';
+import { ShopView } from './components/ShopView.tsx';
 import { AvatarCropModal } from './components/AvatarCropModal.tsx';
 import { PlayerInfoModal } from './components/PlayerInfoModal.tsx';
 import { PlayerAvatar } from './components/PlayerAvatar.tsx';
@@ -263,6 +264,7 @@ export default function App() {
 
   const navItems: { id: AppView; label: string }[] = [
     { id: 'lobby', label: 'Lobby' },
+    { id: 'shop', label: 'Gun Shop' },
     { id: 'profile', label: 'Profile' },
     { id: 'customize', label: 'Customize' },
     { id: 'settings', label: 'Settings' },
@@ -270,8 +272,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen text-slate-100 flex flex-col">
-      {/* Claymorphism Navigation Shell */}
-      <header className="sticky top-0 z-30 bg-[#121826]/95 border-b border-white/10">
+      {/* Dark Stormy Claymorphism Navigation Shell */}
+      <header className="sticky top-0 z-30 bg-[#090d18]/95 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           <button
             type="button"
@@ -379,6 +381,21 @@ export default function App() {
             onInspectPlayer={(p) => setInspectedPlayer(p)}
             onOpenAvatarUpload={() => setAvatarModalOpen(true)}
             onNotify={(msg) => setToast(msg)}
+          />
+        )}
+
+        {view === 'shop' && (
+          <ShopView
+            account={account}
+            onAccountUpdated={(updated) => {
+              setAccount(updated);
+              void refreshPlayers();
+            }}
+            onOpenFiringRange={() => {
+              setSelectedMode('training_range');
+              setActiveRoom(null);
+              setView('playing');
+            }}
           />
         )}
 

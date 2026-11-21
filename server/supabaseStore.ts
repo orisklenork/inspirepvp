@@ -21,10 +21,14 @@ const VALID_AVATAR_IDS = new Set([
 const VALID_CHARACTER_IDS = new Set(['vanguard', 'specter', 'bastion', 'medic']);
 const VALID_WEAPON_IDS = new Set([
   'pulse_rifle',
+  'phantom_ak',
   'tactical_sidearm',
+  'desert_hawk',
   'valkyrie_smg',
   'scatter_cannon',
   'rail_carbine',
+  'awp_viper',
+  'titan_lmg',
 ]);
 const VALID_BACKGROUND_IDS = new Set([
   'foundry_hangar',
@@ -42,10 +46,14 @@ const VALID_THEME_IDS = new Set([
 ]);
 const WEAPON_COSTS: Record<string, number> = {
   pulse_rifle: 0,
+  phantom_ak: 350,
   tactical_sidearm: 0,
+  desert_hawk: 300,
   valkyrie_smg: 450,
-  scatter_cannon: 650,
-  rail_carbine: 900,
+  scatter_cannon: 600,
+  rail_carbine: 850,
+  awp_viper: 1100,
+  titan_lmg: 1250,
 };
 
 export interface DbProfileRow {
@@ -650,16 +658,28 @@ export async function sbRecordMatchResult(
   if (!existing) throw new Error('Player profile not found.');
 
   const { profile, stats } = existing;
-  const kills = Math.max(0, Math.min(99, Math.round(Number(payload.kills) || 0)));
+  const kills = Math.max(0, Math.min(999, Math.round(Number(payload.kills) || 0)));
   const deaths = Math.max(0, Math.min(99, Math.round(Number(payload.deaths) || 0)));
-  const score = Math.max(0, Math.min(20000, Math.round(Number(payload.score) || 0)));
+  const score = Math.max(0, Math.min(50000, Math.round(Number(payload.score) || 0)));
   const durationSec = Math.max(5, Math.min(3600, Math.round(Number(payload.durationSec) || 60)));
   const outcome = payload.outcome === 'victory' ? 'victory' : 'defeat';
-  const allowedModes: GameMode[] = ['1v1_duel', 'training_range', 'skirmish_3v3', 'solo_survival'];
+  const allowedModes: GameMode[] = [
+    '1v1_duel',
+    'zombie_survival',
+    'training_range',
+    'skirmish_3v3',
+    'solo_survival',
+  ];
   const mode: GameMode = allowedModes.includes(payload.mode) ? payload.mode : '1v1_duel';
 
-  const coinsEarned = (outcome === 'victory' ? 180 : 75) + kills * 22;
-  const xpEarned = (outcome === 'victory' ? 140 : 60) + kills * 18;
+  const coinsEarned =
+    mode === 'zombie_survival'
+      ? (outcome === 'victory' ? 220 : 65) + Math.min(120, kills) * 8
+      : (outcome === 'victory' ? 180 : 75) + Math.min(30, kills) * 22;
+  const xpEarned =
+    mode === 'zombie_survival'
+      ? (outcome === 'victory' ? 180 : 55) + Math.min(120, kills) * 7
+      : (outcome === 'victory' ? 140 : 60) + Math.min(30, kills) * 18;
 
   const nextKills = stats.totalKills + kills;
   const nextDeaths = stats.totalDeaths + deaths;
