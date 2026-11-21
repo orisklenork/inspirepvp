@@ -4,7 +4,7 @@ import { attachApiRoutes } from '../server/apiRouter.ts';
 
 const app = express();
 
-// Restore original /api/<route> path if Vercel's rewrite sent /api/index?__path=...
+// Restore original /api/<route> path if Vercel's rewrite sends /api/index?__path=...
 app.use((req, _res, next) => {
   if (req.url.startsWith('/api/index')) {
     const urlObj = new URL(req.url, 'http://localhost');
