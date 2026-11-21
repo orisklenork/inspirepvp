@@ -102,6 +102,25 @@ export function isSupabaseConfigured(): boolean {
   return Boolean(url && key);
 }
 
+export function getSupabaseKeyRole(): string {
+  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+  if (!key) return 'none';
+  if (key.startsWith('sb_secret_')) return 'sb_secret';
+  if (key.startsWith('sb_publishable_')) return 'sb_publishable';
+  const parts = key.split('.');
+  if (parts.length === 3) {
+    try {
+      const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8')) as {
+        role?: string;
+      };
+      if (payload.role) return payload.role;
+    } catch {
+      // ignore malformed JWT
+    }
+  }
+  return 'unknown';
+}
+
 function getConfig(): { url: string; serviceKey: string } {
   const url = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '')
     .trim()
@@ -109,6 +128,12 @@ function getConfig(): { url: string; serviceKey: string } {
   const serviceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
   if (!url || !serviceKey) {
     throw new Error('Supabase environment variables are not configured.');
+  }
+  const role = getSupabaseKeyRole();
+  if (role === 'anon' || role === 'sb_publishable') {
+    throw new Error(
+      'SUPABASE_SERVICE_ROLE_KEY is set to a public/anon key. Please set it to your Supabase service_role (secret) key.'
+    );
   }
   return { url, serviceKey };
 }
@@ -135,8 +160,14 @@ async function sbRest<T>(pathAndQuery: string, init: RequestInit = {}): Promise<
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
   if (!res.ok) {
-    const msg = data?.message || data?.error_description || data?.error || `Database error (${res.status})`;
-    throw new Error(msg);
+    const rawMsg =
+      data?.message || data?.error_description || data?.error || `Database error (${res.status})`;
+    if (typeof rawMsg === 'string' && rawMsg.toLowerCase().includes('permission denied')) {
+      throw new Error(
+        `${rawMsg}. Run the updated supabase/schema.sql (including the GRANT statements) in your Supabase SQL Editor.`
+      );
+    }
+    throw new Error(rawMsg);
   }
   return data as T;
 }

@@ -237,3 +237,16 @@ CREATE POLICY "Users can delete own avatar"
     AND auth.role() = 'authenticated'
     AND (storage.foldername(name))[1] = auth.uid()::text
   );
+
+-- 9. Explicit PostgreSQL privileges for API & server roles
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO service_role;
+
+GRANT SELECT, UPDATE ON TABLE public.username_registry TO authenticated;
+GRANT SELECT, UPDATE ON TABLE public.profiles TO anon, authenticated;
+GRANT SELECT, UPDATE ON TABLE public.player_statistics TO anon, authenticated;
+GRANT SELECT, INSERT ON TABLE public.matches TO authenticated;
+GRANT EXECUTE ON FUNCTION public.check_username_available(TEXT) TO anon, authenticated, service_role;
+

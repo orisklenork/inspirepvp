@@ -18,7 +18,7 @@ import {
   dataUpdateProfile,
 } from './dataService.ts';
 import { AVATARS_DIR } from './store.ts';
-import { isSupabaseConfigured } from './supabaseStore.ts';
+import { getSupabaseKeyRole, isSupabaseConfigured } from './supabaseStore.ts';
 
 const COOKIE_NAME = 'inspiredpvp_session';
 
@@ -128,9 +128,11 @@ export function attachApiRoutes(app: Express): void {
   app.use('/api', verifyMutationHeader);
 
   app.get('/api/health', (_req: Request, res: Response) => {
+    const supabase = isSupabaseConfigured();
     res.json({
       ok: true,
-      backend: isSupabaseConfigured() ? 'supabase' : 'local',
+      backend: supabase ? 'supabase' : 'local',
+      ...(supabase ? { keyRole: getSupabaseKeyRole() } : {}),
     });
   });
 
