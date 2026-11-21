@@ -242,3 +242,134 @@ export async function dataGetPublicPlayer(playerId: string): Promise<PublicPlaye
 export function dataCreateLocalSession(userId: string, rememberMe: boolean) {
   return createSession(userId, rememberMe);
 }
+
+import {
+  localCreateRoom,
+  localGetOpenRooms,
+  localGetRoom,
+  localJoinMatchmaking,
+  localJoinRoom,
+  localLeaveMatchmaking,
+  localLeaveRoom,
+  localPresencePing,
+  localRespondInvite,
+  localSendInvite,
+  localStartRoomMatch,
+  localSyncRoomCombat,
+  localToggleRoomReady,
+} from './localMultiplayer.ts';
+import {
+  sbCreateRoom,
+  sbGetOpenRooms,
+  sbGetRoom,
+  sbJoinMatchmaking,
+  sbJoinRoom,
+  sbLeaveMatchmaking,
+  sbLeaveRoom,
+  sbPresencePing,
+  sbRespondInvite,
+  sbSendInvite,
+  sbStartRoomMatch,
+  sbSyncRoomCombat,
+  sbToggleRoomReady,
+} from './supabaseMultiplayer.ts';
+
+export async function dataPresencePing(
+  userId: string,
+  status: 'online' | 'in_room' | 'in_match' = 'online',
+  currentRoomCode: string | null = null
+) {
+  if (isSupabaseConfigured()) {
+    return sbPresencePing(userId, status, currentRoomCode);
+  }
+  return localPresencePing(userId, status, currentRoomCode);
+}
+
+export async function dataGetOpenRooms() {
+  if (isSupabaseConfigured()) {
+    return sbGetOpenRooms();
+  }
+  return localGetOpenRooms();
+}
+
+export async function dataCreateRoom(userId: string) {
+  if (isSupabaseConfigured()) {
+    return sbCreateRoom(userId);
+  }
+  return localCreateRoom(userId);
+}
+
+export async function dataJoinRoom(userId: string, code: string) {
+  if (isSupabaseConfigured()) {
+    return sbJoinRoom(userId, code);
+  }
+  return localJoinRoom(userId, code);
+}
+
+export async function dataGetRoom(userId: string, code: string) {
+  if (isSupabaseConfigured()) {
+    return sbGetRoom(userId, code);
+  }
+  return localGetRoom(userId, code);
+}
+
+export async function dataToggleRoomReady(userId: string, code: string, ready: boolean) {
+  if (isSupabaseConfigured()) {
+    return sbToggleRoomReady(userId, code, ready);
+  }
+  return localToggleRoomReady(userId, code, ready);
+}
+
+export async function dataStartRoomMatch(userId: string, code: string) {
+  if (isSupabaseConfigured()) {
+    return sbStartRoomMatch(userId, code);
+  }
+  return localStartRoomMatch(userId, code);
+}
+
+export async function dataLeaveRoom(userId: string, code: string) {
+  if (isSupabaseConfigured()) {
+    return sbLeaveRoom(userId, code);
+  }
+  return localLeaveRoom(userId, code);
+}
+
+export async function dataSendInvite(userId: string, targetPlayerId: string, roomCode?: string) {
+  if (isSupabaseConfigured()) {
+    return sbSendInvite(userId, targetPlayerId, roomCode);
+  }
+  return localSendInvite(userId, targetPlayerId, roomCode);
+}
+
+export async function dataRespondInvite(userId: string, inviteId: string, accept: boolean) {
+  if (isSupabaseConfigured()) {
+    return sbRespondInvite(userId, inviteId, accept);
+  }
+  return localRespondInvite(userId, inviteId, accept);
+}
+
+export async function dataJoinMatchmaking(userId: string) {
+  if (isSupabaseConfigured()) {
+    return sbJoinMatchmaking(userId);
+  }
+  return localJoinMatchmaking(userId);
+}
+
+export async function dataLeaveMatchmaking(userId: string) {
+  if (isSupabaseConfigured()) {
+    return sbLeaveMatchmaking(userId);
+  }
+  return localLeaveMatchmaking(userId);
+}
+
+export async function dataSyncRoomCombat(
+  userId: string,
+  code: string,
+  payload: Parameters<typeof sbSyncRoomCombat>[2]
+) {
+  if (isSupabaseConfigured()) {
+    return sbSyncRoomCombat(userId, code, payload);
+  }
+  return localSyncRoomCombat(userId, code, payload);
+}
+

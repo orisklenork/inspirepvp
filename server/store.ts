@@ -645,7 +645,8 @@ export function recordMatchResult(
   const score = Math.max(0, Math.min(20000, Math.round(Number(payload.score) || 0)));
   const durationSec = Math.max(5, Math.min(3600, Math.round(Number(payload.durationSec) || 60)));
   const outcome = payload.outcome === 'victory' ? 'victory' : 'defeat';
-  const mode: GameMode = payload.mode === 'solo_survival' ? 'solo_survival' : 'skirmish_3v3';
+  const allowedModes: GameMode[] = ['1v1_duel', 'training_range', 'skirmish_3v3', 'solo_survival'];
+  const mode: GameMode = allowedModes.includes(payload.mode) ? payload.mode : '1v1_duel';
 
   const coinsEarned = (outcome === 'victory' ? 180 : 75) + kills * 22;
   const xpEarned = (outcome === 'victory' ? 140 : 60) + kills * 18;

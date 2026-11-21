@@ -1,9 +1,8 @@
-import { ArrowRight, Crosshair, Shield, UserPlus, LogIn } from 'lucide-react';
+import { ArrowRight, Crosshair, Shield, UserPlus, LogIn, Smartphone, Monitor, Users } from 'lucide-react';
 import {
   ARENA_KEY_ART_URL,
   CHARACTERS,
   DEFAULT_AVATARS,
-  FOUNDRY_BG_URL,
   WEAPONS,
 } from '../lib/catalog.ts';
 import type { PublicPlayerInfo } from '../types/game.ts';
@@ -17,49 +16,44 @@ interface LandingPageProps {
 
 export function LandingPage({ players, onOpenAuth, onInspectPlayer }: LandingPageProps) {
   return (
-    <div className="min-h-screen bg-[#0B0F17] text-slate-100 flex flex-col">
-      {/* Three-Zone Top Bar */}
-      <header className="sticky top-0 z-30 bg-[#0B0F17]/95 border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-8">
+    <div className="min-h-screen text-slate-100 flex flex-col">
+      {/* Clean Three-Zone Header */}
+      <header className="sticky top-0 z-30 bg-[#121826]/95 border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
           <a
             href="#top"
-            className="font-display text-2xl font-bold tracking-wider text-slate-100 whitespace-nowrap shrink-0"
+            className="font-display text-2xl sm:text-3xl font-extrabold tracking-wider text-white whitespace-nowrap shrink-0"
           >
-            InspiredPVP
+            Inspired<span className="text-orange-400">PVP</span>
           </a>
 
-          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-300">
-            <a
-              href="#arena"
-              className="hover:text-amber-400 transition-colors whitespace-nowrap shrink-0"
-            >
-              Arena
+          <nav className="hidden md:flex items-center gap-7 text-sm font-semibold text-slate-300">
+            <a href="#modes" className="hover:text-orange-400 transition-colors">
+              1v1 Modes
             </a>
-            <a
-              href="#operatives"
-              className="hover:text-amber-400 transition-colors whitespace-nowrap shrink-0"
-            >
+            <a href="#operatives" className="hover:text-orange-400 transition-colors">
               Operatives
             </a>
-            <a
-              href="#arsenal"
-              className="hover:text-amber-400 transition-colors whitespace-nowrap shrink-0"
-            >
-              Arsenal
+            <a href="#arsenal" className="hover:text-orange-400 transition-colors">
+              3D Arsenal
             </a>
-            <a
-              href="#roster"
-              className="hover:text-amber-400 transition-colors whitespace-nowrap shrink-0"
-            >
-              Roster
+            <a href="#roster" className="hover:text-orange-400 transition-colors">
+              Players
             </a>
           </nav>
 
-          <div className="shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => onOpenAuth('login')}
+              className="clay-btn-secondary text-sm font-semibold px-4 py-2 cursor-pointer"
+            >
+              Log In
+            </button>
             <button
               type="button"
               onClick={() => onOpenAuth('register')}
-              className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm px-4 py-2 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="clay-btn-primary inline-flex items-center gap-1.5 text-sm font-bold px-4 py-2 cursor-pointer"
             >
               <span>Play Now</span>
               <ArrowRight className="w-4 h-4" />
@@ -68,283 +62,232 @@ export function LandingPage({ players, onOpenAuth, onInspectPlayer }: LandingPag
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero Showcase */}
       <section id="top" className="relative overflow-hidden border-b border-white/10">
         <div className="absolute inset-0 pointer-events-none">
           <img
             src={ARENA_KEY_ART_URL}
-            alt="InspiredPVP Sector A combat arena courtyard"
+            alt="InspiredPVP 3D tactical arena"
             referrerPolicy="no-referrer"
-            className="w-full h-full object-cover opacity-55"
+            className="w-full h-full object-cover opacity-35"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0B0F17] via-[#0B0F17]/82 to-[#0B0F17]/40" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-transparent to-[#0B0F17]/60" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#121826] via-[#121826]/88 to-[#121826]/55" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#121826] via-transparent to-[#121826]/70" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-32">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-3 mb-5">
-              <svg viewBox="0 0 44 44" className="w-10 h-10 shrink-0" aria-hidden="true">
-                <path
-                  d="M12 4L32 4L40 22L32 40L12 40L4 22Z"
-                  fill="none"
-                  stroke="#F59E0B"
-                  strokeWidth="2.8"
-                />
-                <path d="M16 14H29L24 30H13L16 14Z" fill="#F59E0B" />
-              </svg>
-              <span className="text-xs font-mono text-amber-400 tracking-wide">
-                2D Tactical Arena Combat · Browser &amp; Mobile Ready
-              </span>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-28">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7">
+              <p className="text-xs font-mono font-bold uppercase tracking-widest text-orange-400 mb-3">
+                3D Third-Person Tactical Shooter · Desktop &amp; Mobile
+              </p>
+
+              <h1 className="font-display font-extrabold text-white leading-[1.02] tracking-tight text-[clamp(2.6rem,5.5vw,4.5rem)]">
+                Create a Room, Invite Rivals &amp; Battle 1v1 in 3D.
+              </h1>
+
+              <p className="mt-5 text-base sm:text-lg text-slate-300 leading-relaxed max-w-xl">
+                Drop straight into live 3D courtyard duels with realistic guns, crouch cover,
+                tactical reloads, and full phone touch + PC mouse controls. Instant username-only
+                accounts with zero email required.
+              </p>
+
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => onOpenAuth('register')}
+                  className="clay-btn-primary inline-flex items-center gap-2 font-bold text-base px-7 py-3.5 cursor-pointer"
+                >
+                  <UserPlus className="w-5 h-5" />
+                  <span>Create Free Account</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onOpenAuth('login')}
+                  className="clay-btn-secondary inline-flex items-center gap-2 font-semibold text-base px-6 py-3.5 cursor-pointer"
+                >
+                  <LogIn className="w-5 h-5 text-orange-400" />
+                  <span>Log In</span>
+                </button>
+              </div>
             </div>
 
-            <h1 className="font-display font-bold text-slate-100 leading-[1.04] tracking-tight text-balance text-[clamp(2.5rem,5vw,4.25rem)]">
-              Competitive 2D arena combat built for instant deployment.
-            </h1>
+            <div className="lg:col-span-5">
+              <div className="clay-card p-6 space-y-4">
+                <h2 className="font-display text-2xl font-bold text-white">
+                  Built for Instant 1v1 Action
+                </h2>
 
-            <p className="mt-5 text-base sm:text-lg text-slate-300 leading-relaxed max-w-xl">
-              Step into 3v3 Team Skirmishes and Solo Survival rounds in Sector A. Create your
-              InspiredPVP gaming profile in seconds with just a username and password, upload a
-              cropped portrait, customize your frame, and climb the combat record.
+                <div className="space-y-3">
+                  <div className="clay-inset p-3.5 flex items-start gap-3">
+                    <Users className="w-5 h-5 text-orange-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-bold text-white">Rooms, Invites &amp; Quick Match</p>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Create a shareable room code, invite online players, or click Random Match
+                        to pair automatically.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="clay-inset p-3.5 flex items-start gap-3">
+                    <Monitor className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-bold text-white">PC Mouse &amp; Keyboard</p>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        WASD Move · Click Shoot · Right-Click Scope · C Crouch · R Reload · 1/2 Swap
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="clay-inset p-3.5 flex items-start gap-3">
+                    <Smartphone className="w-5 h-5 text-sky-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-bold text-white">Mobile Touch HUD</p>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Virtual thumbstick, swipe aim pad, and tactile Fire, Scope, Crouch &amp;
+                        Reload buttons.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Modes Overview */}
+      <section id="modes" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="clay-card p-6">
+            <p className="text-xs font-mono font-bold text-orange-400">01 · QUICK MATCH</p>
+            <h3 className="font-display text-2xl font-bold text-white mt-1">Random 1v1 Duel</h3>
+            <p className="text-sm text-slate-300 mt-2 leading-relaxed">
+              Tap Find Match to pair directly with another real player in the queue and launch into
+              a first-to-5 3D showdown.
             </p>
-
-            <div className="mt-8 flex flex-wrap items-center gap-3.5">
-              <button
-                type="button"
-                onClick={() => onOpenAuth('register')}
-                className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm sm:text-base px-6 py-3.5 transition-colors whitespace-nowrap cursor-pointer"
-              >
-                <UserPlus className="w-4 h-4" />
-                <span>Create Free Account</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onOpenAuth('login')}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#151C28]/90 hover:bg-[#1C2536] border border-white/15 text-slate-100 font-semibold text-sm sm:text-base px-6 py-3.5 transition-colors whitespace-nowrap cursor-pointer"
-              >
-                <LogIn className="w-4 h-4 text-amber-400" />
-                <span>Log In</span>
-              </button>
-            </div>
-
-            <p className="mt-7 text-xs text-slate-400 font-mono">
-              WASD Move · Mouse Aim &amp; Fire · Space Dash · R Reload · Tab Live Scoreboard
+          </div>
+          <div className="clay-card p-6">
+            <p className="text-xs font-mono font-bold text-emerald-400">02 · PRIVATE ROOMS</p>
+            <h3 className="font-display text-2xl font-bold text-white mt-1">Create &amp; Invite</h3>
+            <p className="text-sm text-slate-300 mt-2 leading-relaxed">
+              Host a room with a 6-character code, send instant 1-tap invites to online players, or
+              join open rooms in the lobby.
+            </p>
+          </div>
+          <div className="clay-card p-6">
+            <p className="text-xs font-mono font-bold text-sky-400">03 · SOLO DRILL</p>
+            <h3 className="font-display text-2xl font-bold text-white mt-1">3D Firing Range</h3>
+            <p className="text-sm text-slate-300 mt-2 leading-relaxed">
+              Dial in your sensitivity, crouch cover angles, ADS zoom, and weapon recoil against
+              reactive steel range targets.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Section 01: Arena Modes & Mechanics */}
-      <section id="arena" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 w-full">
-        <div className="max-w-2xl mb-10">
-          <p className="text-xs font-semibold text-amber-400 tracking-wide">01. Arena Modes</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-100 mt-1.5 text-balance">
-            Fast tactical skirmishes with real-time cover and supply control
+      {/* Operatives & Arsenal */}
+      <section id="operatives" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <div className="mb-7">
+          <p className="text-xs font-mono font-bold text-orange-400">OPERATIVES</p>
+          <h2 className="font-display text-3xl sm:text-4xl font-bold text-white mt-1">
+            Four 3D Combat Frames
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          <div className="lg:col-span-7 rounded-2xl bg-[#151C28] border border-white/10 overflow-hidden flex flex-col">
-            <div className="relative h-64 sm:h-72">
-              <img
-                src={FOUNDRY_BG_URL}
-                alt="InspiredPVP Foundry Armory hangar"
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#151C28] via-[#151C28]/35 to-transparent" />
-            </div>
-            <div className="p-6 sm:p-7 flex-1 flex flex-col justify-between">
-              <div>
-                <h3 className="text-2xl font-bold text-slate-100">Team Skirmish 3v3</h3>
-                <p className="text-sm text-slate-300 mt-2 leading-relaxed">
-                  Squad up alongside two allied operatives against three tactical rivals. Hold the
-                  central bunker, rotate to medkit and ammo supply nodes, and reach 12 eliminations
-                  before the 85-second clock expires.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-white/10 grid grid-cols-3 gap-4 text-sm tabular-nums">
-                <div>
-                  <span className="text-xs text-slate-400 block">Match Target</span>
-                  <span className="font-semibold text-slate-100">12 Eliminations</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {CHARACTERS.map((char, idx) => {
+            const portrait = DEFAULT_AVATARS[idx]?.imageUrl;
+            return (
+              <div key={char.id} className="clay-card overflow-hidden flex flex-col">
+                <div className="aspect-square bg-[#101624] relative overflow-hidden">
+                  {portrait && (
+                    <img
+                      src={portrait}
+                      alt={char.name}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                 </div>
-                <div>
-                  <span className="text-xs text-slate-400 block">Round Clock</span>
-                  <span className="font-semibold text-slate-100">85 Seconds</span>
-                </div>
-                <div>
-                  <span className="text-xs text-slate-400 block">Starting Funds</span>
-                  <span className="font-semibold text-amber-400">1,000 Coins</span>
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-display text-2xl font-bold text-white">{char.name}</h3>
+                      <span className="text-xs font-semibold text-orange-400">{char.title}</span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-2 leading-relaxed">{char.description}</p>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-mono text-slate-300 tabular-nums">
+                    <span className="inline-flex items-center gap-1">
+                      <Shield className="w-3.5 h-3.5 text-orange-400" />
+                      {char.maxHp} HP
+                    </span>
+                    <span>{char.moveSpeed} SPD</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-5 flex flex-col gap-6">
-            <div className="rounded-2xl bg-[#151C28] border border-white/10 p-6 flex-1">
-              <h3 className="text-2xl font-bold text-slate-100">Solo Survival</h3>
-              <p className="text-sm text-slate-300 mt-2 leading-relaxed">
-                Deploy solo against four flanking opponents. Use input-buffered tactical dashes,
-                weapon switching between primary and sidearm, and cover angles to outscore the room.
-              </p>
-              <div className="mt-4 flex items-center gap-3 text-xs text-slate-400 font-mono">
-                <span>1 vs 4 Arena</span>
-                <span aria-hidden="true">·</span>
-                <span>Dynamic Respawns</span>
-                <span aria-hidden="true">·</span>
-                <span>XP &amp; Coins</span>
-              </div>
-            </div>
-
-            <div className="rounded-2xl bg-[#151C28] border border-white/10 p-6 flex-1">
-              <h3 className="text-2xl font-bold text-slate-100">
-                Instant Username-Only Accounts
-              </h3>
-              <p className="text-sm text-slate-300 mt-2 leading-relaxed">
-                No email address, phone number, or verification codes required. Pick an available
-                username, set a password, and receive your unique Player ID immediately.
-              </p>
-              <div className="mt-4 flex items-center gap-3 text-xs text-slate-400 font-mono">
-                <span>Username + Password</span>
-                <span aria-hidden="true">·</span>
-                <span>Cropped Photo Upload</span>
-                <span aria-hidden="true">·</span>
-                <span>Career Stats</span>
-              </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
-      </section>
 
-      {/* Section 02: Selectable Operatives & Arsenal */}
-      <section
-        id="operatives"
-        className="border-t border-white/10 bg-[#0E131D] py-16 lg:py-20"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mb-10">
-            <p className="text-xs font-semibold text-amber-400 tracking-wide">
-              02. Operatives &amp; Portraits
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-100 mt-1.5 text-balance">
-              Four combat frames with distinct speed, armor, and dash pacing
+        <div id="arsenal" className="mt-14">
+          <div className="mb-6">
+            <p className="text-xs font-mono font-bold text-orange-400">3D ARMORY</p>
+            <h2 className="font-display text-3xl font-bold text-white mt-1">
+              Tactical Rifles, SMGs, Shotguns &amp; Sidearms
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {CHARACTERS.map((char, idx) => {
-              const portrait = DEFAULT_AVATARS[idx]?.imageUrl;
-              return (
-                <div
-                  key={char.id}
-                  className="rounded-2xl bg-[#151C28] border border-white/10 overflow-hidden flex flex-col"
-                >
-                  <div className="aspect-square bg-[#0B0F17] relative overflow-hidden">
-                    {portrait && (
-                      <img
-                        src={portrait}
-                        alt={char.name}
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover"
-                      />
-                    )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {WEAPONS.map((w) => (
+              <div key={w.id} className="clay-panel p-4 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-1.5 text-orange-400 text-xs font-semibold mb-1">
+                    <Crosshair className="w-3.5 h-3.5" />
+                    <span>{w.category}</span>
                   </div>
-                  <div className="p-5 flex-1 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-xl font-bold text-slate-100">{char.name}</h3>
-                        <span className="text-xs text-amber-400 font-medium">{char.title}</span>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                        {char.description}
-                      </p>
-                    </div>
-                    <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-300 font-mono tabular-nums">
-                      <span className="inline-flex items-center gap-1">
-                        <Shield className="w-3.5 h-3.5 text-amber-400" />
-                        {char.maxHp} HP
-                      </span>
-                      <span>{char.moveSpeed} SPD</span>
-                    </div>
-                  </div>
+                  <h3 className="text-base font-bold text-white">{w.name}</h3>
+                  <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">{w.description}</p>
                 </div>
-              );
-            })}
-          </div>
-
-          {/* Armory Preview */}
-          <div id="arsenal" className="mt-14">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
-              <div>
-                <p className="text-xs font-semibold text-amber-400 tracking-wide">03. Armory</p>
-                <h2 className="text-2xl sm:text-3xl font-bold text-slate-100 mt-1">
-                  Unlockable Weapons &amp; Starting Loadout
-                </h2>
+                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-mono tabular-nums">
+                  <span className="text-slate-300">DMG {w.damage * w.pellets}</span>
+                  <span className={w.costCoins === 0 ? 'text-emerald-400' : 'text-orange-400'}>
+                    {w.costCoins === 0 ? 'Starter' : `${w.costCoins}c`}
+                  </span>
+                </div>
               </div>
-              <span className="text-xs text-slate-400">
-                Two starter weapons included · Earn coins in matches to unlock more
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {WEAPONS.map((w) => (
-                <div
-                  key={w.id}
-                  className="rounded-xl bg-[#151C28] border border-white/10 p-4 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center gap-2 text-amber-400 mb-1.5">
-                      <Crosshair className="w-4 h-4 shrink-0" />
-                      <span className="text-xs font-medium">{w.category}</span>
-                    </div>
-                    <h3 className="text-base font-bold text-slate-100">{w.name}</h3>
-                    <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
-                      {w.description}
-                    </p>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-mono tabular-nums">
-                    <span className="text-slate-300">
-                      DMG {w.damage * w.pellets} · MAG {w.magSize}
-                    </span>
-                    <span className={w.costCoins === 0 ? 'text-emerald-400' : 'text-amber-400'}>
-                      {w.costCoins === 0 ? 'Included' : `${w.costCoins}c`}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Section 04: Registered Operatives Roster */}
-      <section id="roster" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 w-full">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+      {/* Registered Players Roster (Real players only) */}
+      <section id="roster" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 w-full">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-7">
           <div>
-            <p className="text-xs font-semibold text-amber-400 tracking-wide">
-              04. Registered Operatives
-            </p>
-            <h2 className="text-3xl font-bold text-slate-100 mt-1">
-              Customizable Player Cards Visible Everywhere
+            <p className="text-xs font-mono font-bold text-orange-400">REGISTERED OPERATIVES</p>
+            <h2 className="font-display text-3xl font-bold text-white mt-1">
+              Real Player Leaderboard
             </h2>
           </div>
           {players.length > 0 && (
-            <p className="text-xs text-slate-400">Click any operative card to inspect their profile</p>
+            <p className="text-xs text-slate-400">Click any player card to inspect career stats</p>
           )}
         </div>
 
         {players.length === 0 ? (
-          <div className="rounded-2xl bg-[#151C28] border border-white/10 p-8 text-center">
-            <p className="text-base font-semibold text-slate-100">No registered operatives yet.</p>
-            <p className="text-sm text-slate-400 mt-1.5 max-w-md mx-auto">
-              Be the first player to create an InspiredPVP account and appear on the live operative
-              roster.
+          <div className="clay-card p-8 text-center">
+            <p className="text-base font-bold text-white">No registered operatives yet.</p>
+            <p className="text-sm text-slate-400 mt-1.5">
+              Create your account in seconds to appear on the live roster and challenge players 1v1.
             </p>
             <button
               type="button"
               onClick={() => onOpenAuth('register')}
-              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm px-5 py-2.5 transition-colors cursor-pointer"
+              className="clay-btn-primary mt-5 inline-flex items-center gap-2 font-bold text-sm px-6 py-3 cursor-pointer"
             >
               <span>Create First Account</span>
               <ArrowRight className="w-4 h-4" />
@@ -357,7 +300,7 @@ export function LandingPage({ players, onOpenAuth, onInspectPlayer }: LandingPag
                 key={player.profile.playerId}
                 type="button"
                 onClick={() => onInspectPlayer(player)}
-                className="text-left rounded-2xl bg-[#151C28] border border-white/10 hover:border-amber-500/50 p-4 transition-colors cursor-pointer"
+                className="clay-panel hover:border-orange-400/50 text-left p-4 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <PlayerAvatar
@@ -368,7 +311,7 @@ export function LandingPage({ players, onOpenAuth, onInspectPlayer }: LandingPag
                     size="md"
                   />
                   <div className="min-w-0">
-                    <p className="font-semibold text-sm text-slate-100 truncate">
+                    <p className="font-bold text-sm text-white truncate">
                       {player.profile.displayName}
                     </p>
                     <p className="text-xs text-slate-400 font-mono truncate">
@@ -385,61 +328,12 @@ export function LandingPage({ players, onOpenAuth, onInspectPlayer }: LandingPag
             ))}
           </div>
         )}
-
-        {/* Bottom CTA */}
-        <div className="mt-14 rounded-2xl bg-[#151C28] border border-amber-500/30 p-8 sm:p-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <h2 className="text-3xl font-bold text-slate-100">Ready to enter the arena?</h2>
-            <p className="text-sm text-slate-300 mt-1.5 max-w-xl">
-              Create your InspiredPVP account with a username and password in under ten seconds
-              and deploy directly into the multiplayer lobby.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={() => onOpenAuth('login')}
-              className="rounded-xl bg-[#0B0F17] hover:bg-white/5 border border-white/15 text-slate-100 font-semibold text-sm px-5 py-3 transition-colors whitespace-nowrap cursor-pointer"
-            >
-              Log In
-            </button>
-            <button
-              type="button"
-              onClick={() => onOpenAuth('register')}
-              className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm px-6 py-3 transition-colors whitespace-nowrap cursor-pointer"
-            >
-              <span>Create Account</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
       </section>
 
-      {/* Quiet Footer */}
-      <footer className="border-t border-white/10 py-8 mt-auto">
+      <footer className="border-t border-white/10 py-7 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <span className="font-display text-base font-bold tracking-wider text-slate-300">
-            InspiredPVP
-          </span>
-          <div className="flex items-center gap-6">
-            <a href="#arena" className="hover:text-slate-300">
-              Arena
-            </a>
-            <a href="#operatives" className="hover:text-slate-300">
-              Operatives
-            </a>
-            <a href="#arsenal" className="hover:text-slate-300">
-              Arsenal
-            </a>
-            <button
-              type="button"
-              onClick={() => onOpenAuth('login')}
-              className="hover:text-slate-300 cursor-pointer"
-            >
-              Sign In
-            </button>
-          </div>
-          <span>© 2026 InspiredPVP</span>
+          <span className="font-display text-lg font-bold text-slate-300">InspiredPVP</span>
+          <span>3D 1v1 Arena Shooter · Desktop &amp; Mobile</span>
         </div>
       </footer>
     </div>

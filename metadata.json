@@ -1,6 +1,6 @@
 {
   "name": "STRIKEFRAME",
-  "description": "Tactical 2D arena combat game featuring instant username-only account creation, interactive avatar upload and cropping, profile customization, multiplayer room staging, and live career statistics.",
+  "description": "3D third-person arena tactical shooter with Claymorphism UI, live 1v1 rooms, player invites, random matchmaking, PC and mobile touch controls, and instant username-only accounts.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Coins, LogOut, CheckCircle2, X } from 'lucide-react';
 import {
+  fetchBattleRoom,
+  fetchOpenRooms,
   fetchRegisteredPlayers,
   fetchSession,
   logoutAccount,
+  pingPresence,
   recordArenaMatch,
   removeAvatarPicture,
   updateProfile,
@@ -12,10 +15,14 @@ import {
 import type {
   AppView,
   GameMode,
+  GameRoom,
   MatchParticipantResult,
   MatchRecord,
+  MatchmakingStatus,
+  OnlinePlayerPresence,
   PlayerAccountBundle,
   PublicPlayerInfo,
+  RoomInvite,
 } from './types/game.ts';
 import { LandingPage } from './components/LandingPage.tsx';
 import { AuthScreen } from './components/AuthScreen.tsx';
@@ -23,7 +30,7 @@ import { LobbyView } from './components/LobbyView.tsx';
 import { ProfileView } from './components/ProfileView.tsx';
 import { CustomizeProfileView } from './components/CustomizeProfileView.tsx';
 import { SettingsView } from './components/SettingsView.tsx';
-import { ArenaGameCanvas } from './components/ArenaGameCanvas.tsx';
+import { Arena3DView } from './components/Arena3DView.tsx';
 import { MatchResultsView } from './components/MatchResultsView.tsx';
 import { AvatarCropModal } from './components/AvatarCropModal.tsx';
 import { PlayerInfoModal } from './components/PlayerInfoModal.tsx';
@@ -33,8 +40,18 @@ export default function App() {
   const [initializing, setInitializing] = useState(true);
   const [account, setAccount] = useState<PlayerAccountBundle | null>(null);
   const [registeredPlayers, setRegisteredPlayers] = useState<PublicPlayerInfo[]>([]);
+  const [onlinePlayers, setOnlinePlayers] = useState<OnlinePlayerPresence[]>([]);
+  const [incomingInvites, setIncomingInvites] = useState<RoomInvite[]>([]);
+  const [openRooms, setOpenRooms] = useState<GameRoom[]>([]);
+  const [activeRoom, setActiveRoom] = useState<GameRoom | null>(null);
+  const [matchmaking, setMatchmaking] = useState<MatchmakingStatus>({
+    queued: false,
+    matchedRoomCode: null,
+    queueCount: 0,
+  });
+
   const [view, setView] = useState<AppView>('lobby');
-  const [selectedMode, setSelectedMode] = useState<GameMode>('skirmish_3v3');
+  const [selectedMode, setSelectedMode] = useState<GameMode>('1v1_duel');
   const [lastMatch, setLastMatch] = useState<MatchRecord | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
@@ -48,6 +65,52 @@ export default function App() {
     const players = await fetchRegisteredPlayers().catch(() => []);
     setRegisteredPlayers(players);
   }
+
+  const refreshMultiplayer = useCallback(async () => {
+    if (!account || view === 'playing') return;
+    try {
+      const status = activeRoom ? 'in_room' : 'online';
+      const [pingRes, roomsList] = await Promise.all([
+        pingPresence(status, activeRoom?.code ?? null),
+        fetchOpenRooms().catch(() => []),
+      ]);
+      setOnlinePlayers(pingRes.onlinePlayers);
+      setIncomingInvites(pingRes.incomingInvites);
+      setMatchmaking(pingRes.matchmaking);
+      setOpenRooms(roomsList);
+
+      // Handle random matchmaking match found!
+      if (pingRes.matchmaking.matchedRoomCode) {
+        const matched = await fetchBattleRoom(pingRes.matchmaking.matchedRoomCode).catch(() => null);
+        if (matched) {
+          setActiveRoom(matched);
+          setSelectedMode('1v1_duel');
+          setView('playing');
+          return;
+        }
+      }
+
+      // Sync active room updates (guest joined OR host started battle!)
+      if (activeRoom) {
+        const updatedRoom = await fetchBattleRoom(activeRoom.code).catch(() => null);
+        if (!updatedRoom) {
+          setActiveRoom(null);
+        } else {
+          setActiveRoom(updatedRoom);
+          if (updatedRoom.status === 'playing') {
+            setSelectedMode('1v1_duel');
+            setView('playing');
+          }
+        }
+      } else if (pingRes.activeRoom && pingRes.activeRoom.status === 'playing') {
+        setActiveRoom(pingRes.activeRoom);
+        setSelectedMode('1v1_duel');
+        setView('playing');
+      }
+    } catch {
+      // Ignore transient heartbeat errors
+    }
+  }, [account, activeRoom, view]);
 
   useEffect(() => {
     let active = true;
@@ -71,9 +134,20 @@ export default function App() {
     };
   }, []);
 
+  // Live lobby heartbeat (polls every 1.4s when in lobby / waiting room / matchmaking queue)
+  useEffect(() => {
+    if (!account || view === 'playing') return;
+    void refreshMultiplayer();
+    const delay = activeRoom || matchmaking.queued ? 1000 : 2500;
+    const id = window.setInterval(() => {
+      void refreshMultiplayer();
+    }, delay);
+    return () => window.clearInterval(id);
+  }, [account, view, activeRoom, matchmaking.queued, refreshMultiplayer]);
+
   useEffect(() => {
     if (!toast) return;
-    const t = window.setTimeout(() => setToast(null), 5000);
+    const t = window.setTimeout(() => setToast(null), 4500);
     return () => window.clearTimeout(t);
   }, [toast]);
 
@@ -90,6 +164,7 @@ export default function App() {
   async function handleLogout(): Promise<void> {
     await logoutAccount();
     setAccount(null);
+    setActiveRoom(null);
     setLastMatch(null);
     setView('lobby');
     void refreshPlayers();
@@ -128,6 +203,7 @@ export default function App() {
     durationSec: number;
     participants: MatchParticipantResult[];
   }): Promise<void> {
+    setActiveRoom(null);
     try {
       const res = await recordArenaMatch(result);
       setAccount(res.bundle);
@@ -141,10 +217,10 @@ export default function App() {
 
   if (initializing) {
     return (
-      <div className="min-h-screen w-full bg-[#0B0F17] flex items-center justify-center">
-        <div className="text-center space-y-2">
-          <div className="w-8 h-8 rounded-full border-2 border-amber-500 border-t-transparent animate-spin mx-auto" />
-          <p className="text-sm text-slate-400">Loading InspiredPVP...</p>
+      <div className="min-h-screen w-full flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 rounded-full border-3 border-orange-500 border-t-transparent animate-spin mx-auto" />
+          <p className="text-sm font-semibold text-slate-300">Loading InspiredPVP...</p>
         </div>
       </div>
     );
@@ -171,12 +247,16 @@ export default function App() {
 
   if (view === 'playing') {
     return (
-      <ArenaGameCanvas
+      <Arena3DView
         account={account}
-        players={registeredPlayers}
         mode={selectedMode}
+        room={activeRoom}
         onMatchFinished={(res) => void handleMatchFinished(res)}
-        onExitToLobby={() => setView('lobby')}
+        onExitToLobby={() => {
+          setActiveRoom(null);
+          setView('lobby');
+          void refreshMultiplayer();
+        }}
       />
     );
   }
@@ -189,21 +269,19 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0B0F17] text-slate-100 flex flex-col">
-      {/* Three-Zone Game Shell Top Bar */}
-      <header className="sticky top-0 z-30 bg-[#0B0F17]/95 border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
-          {/* Zone 1: Brand Wordmark */}
+    <div className="min-h-screen text-slate-100 flex flex-col">
+      {/* Claymorphism Navigation Shell */}
+      <header className="sticky top-0 z-30 bg-[#121826]/95 border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           <button
             type="button"
             onClick={() => setView('lobby')}
-            className="font-display text-2xl font-bold tracking-wider text-slate-100 hover:text-amber-400 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            className="font-display text-2xl sm:text-3xl font-extrabold tracking-wider text-white hover:text-orange-400 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
-            InspiredPVP
+            Inspired<span className="text-orange-400">PVP</span>
           </button>
 
-          {/* Zone 2: Single-line Nav Links */}
-          <nav className="flex items-center gap-4 sm:gap-7 overflow-x-auto">
+          <nav className="flex items-center gap-2 sm:gap-4 overflow-x-auto">
             {navItems.map((item) => {
               const active = view === item.id;
               return (
@@ -211,10 +289,10 @@ export default function App() {
                   key={item.id}
                   type="button"
                   onClick={() => setView(item.id)}
-                  className={`text-sm font-semibold py-1 border-b-2 transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                  className={`text-xs sm:text-sm font-bold px-3.5 py-2 rounded-2xl transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                     active
-                      ? 'text-amber-400 border-amber-400'
-                      : 'text-slate-400 border-transparent hover:text-slate-100'
+                      ? 'clay-btn-primary'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   {item.label}
@@ -223,9 +301,8 @@ export default function App() {
             })}
           </nav>
 
-          {/* Zone 3: Active Player Chip + Logout */}
-          <div className="flex items-center gap-3 shrink-0">
-            <span className="hidden md:inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 tabular-nums">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <span className="hidden md:inline-flex items-center gap-1.5 text-xs font-bold text-orange-400 tabular-nums clay-inset px-3 py-1.5">
               <Coins className="w-3.5 h-3.5" />
               {account.profile.coins.toLocaleString()}
             </span>
@@ -233,7 +310,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setView('profile')}
-              className="flex items-center gap-2.5 rounded-xl bg-[#151C28] hover:bg-[#1C2536] border border-white/10 pl-1.5 pr-3 py-1 transition-colors cursor-pointer"
+              className="clay-btn-secondary flex items-center gap-2 pl-1.5 pr-3 py-1 cursor-pointer"
               title="Open Player Profile"
             >
               <PlayerAvatar
@@ -243,7 +320,7 @@ export default function App() {
                 displayName={account.profile.displayName}
                 size="xs"
               />
-              <span className="hidden sm:inline text-xs font-semibold text-slate-100 max-w-[110px] truncate">
+              <span className="hidden sm:inline text-xs font-bold text-white max-w-[110px] truncate">
                 {account.profile.displayName}
               </span>
             </button>
@@ -253,7 +330,7 @@ export default function App() {
               onClick={() => void handleLogout()}
               title="Log Out"
               aria-label="Log Out"
-              className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-white/5 transition-colors cursor-pointer"
+              className="clay-btn-secondary p-2 text-slate-300 hover:text-rose-400 cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -261,10 +338,9 @@ export default function App() {
         </div>
       </header>
 
-      {/* Success / Status Toast */}
       {toast && (
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-4">
-          <div className="flex items-center justify-between gap-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-4 py-3 text-sm text-emerald-300">
+          <div className="clay-panel border-emerald-400/35 px-4 py-3 flex items-center justify-between gap-3 text-sm text-emerald-300">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>{toast}</span>
@@ -273,7 +349,7 @@ export default function App() {
               type="button"
               onClick={() => setToast(null)}
               aria-label="Dismiss notification"
-              className="text-emerald-300/70 hover:text-emerald-200"
+              className="text-emerald-300/70 hover:text-emerald-200 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -281,19 +357,28 @@ export default function App() {
         </div>
       )}
 
-      {/* Active View */}
       <main className="flex-1">
         {view === 'lobby' && (
           <LobbyView
             account={account}
             players={registeredPlayers}
-            selectedMode={selectedMode}
-            onChangeMode={setSelectedMode}
+            onlinePlayers={onlinePlayers}
+            incomingInvites={incomingInvites}
+            openRooms={openRooms}
+            activeRoom={activeRoom}
+            matchmaking={matchmaking}
+            onSetActiveRoom={setActiveRoom}
+            onRefreshMultiplayer={refreshMultiplayer}
             onQuickLoadoutChange={handleQuickLoadoutChange}
-            onStartMatch={() => setView('playing')}
+            onEnterBattle={(mode, room) => {
+              setSelectedMode(mode);
+              setActiveRoom(room);
+              setView('playing');
+            }}
             onNavigate={setView}
             onInspectPlayer={(p) => setInspectedPlayer(p)}
             onOpenAvatarUpload={() => setAvatarModalOpen(true)}
+            onNotify={(msg) => setToast(msg)}
           />
         )}
 
@@ -336,7 +421,7 @@ export default function App() {
             account={account}
             match={lastMatch}
             players={registeredPlayers}
-            onPlayAgain={() => setView('playing')}
+            onPlayAgain={() => setView('lobby')}
             onReturnToLobby={() => setView('lobby')}
             onInspectPlayer={(p) => setInspectedPlayer(p)}
           />

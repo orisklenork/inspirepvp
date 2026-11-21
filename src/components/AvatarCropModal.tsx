@@ -205,10 +205,10 @@ export function AvatarCropModal({ isOpen, onClose, onUploadComplete }: AvatarCro
       aria-modal="true"
       aria-labelledby="crop-modal-title"
     >
-      <div className="w-full max-w-md rounded-2xl bg-[#151C28] border border-white/10 p-6 shadow-2xl">
+      <div className="clay-card w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 id="crop-modal-title" className="text-xl font-bold text-slate-100">
+            <h2 id="crop-modal-title" className="font-display text-2xl font-bold text-white">
               Upload Profile Picture
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -218,10 +218,10 @@ export function AvatarCropModal({ isOpen, onClose, onUploadComplete }: AvatarCro
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+            className="clay-btn-secondary p-2 cursor-pointer"
             aria-label="Close upload dialog"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -237,17 +237,17 @@ export function AvatarCropModal({ isOpen, onClose, onUploadComplete }: AvatarCro
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full h-64 rounded-xl border-2 border-dashed border-slate-600 hover:border-amber-500/70 bg-[#0B0F17]/70 flex flex-col items-center justify-center gap-3 transition-colors cursor-pointer"
+            className="clay-inset w-full h-64 border-2 border-dashed border-slate-600 hover:border-orange-500/70 flex flex-col items-center justify-center gap-3 transition-colors cursor-pointer"
           >
-            <div className="w-12 h-12 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-400">
+            <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center text-orange-400">
               <Upload className="w-6 h-6" />
             </div>
             <div className="text-center px-4">
-              <p className="text-sm font-medium text-slate-200">
+              <p className="text-sm font-semibold text-slate-200">
                 Choose from device or mobile gallery
               </p>
               <p className="text-xs text-slate-400 mt-1">
-                You can crop and reposition before saving
+                Crop and reposition before saving
               </p>
             </div>
           </button>
@@ -262,7 +262,7 @@ export function AvatarCropModal({ isOpen, onClose, onUploadComplete }: AvatarCro
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
                 onPointerCancel={handlePointerUp}
-                className="rounded-xl border border-white/10 cursor-grab active:cursor-grabbing touch-none"
+                className="rounded-2xl border border-white/10 cursor-grab active:cursor-grabbing touch-none"
               />
               <p className="text-xs text-slate-400 mt-2">Drag image to reposition inside frame</p>
             </div>
@@ -277,7 +277,7 @@ export function AvatarCropModal({ isOpen, onClose, onUploadComplete }: AvatarCro
                 value={zoom}
                 onChange={(e) => setZoom(Number(e.target.value))}
                 aria-label="Zoom image"
-                className="w-full accent-amber-500"
+                className="w-full accent-orange-500"
               />
               <ZoomIn className="w-4 h-4 text-slate-400 shrink-0" />
               <button
@@ -286,7 +286,7 @@ export function AvatarCropModal({ isOpen, onClose, onUploadComplete }: AvatarCro
                   setZoom(1);
                   setOffset({ x: 0, y: 0 });
                 }}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5"
+                className="clay-btn-secondary p-2 cursor-pointer"
                 title="Reset position"
                 aria-label="Reset position"
               >
@@ -298,7 +298,7 @@ export function AvatarCropModal({ isOpen, onClose, onUploadComplete }: AvatarCro
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 text-sm font-medium rounded-lg border border-white/10 text-slate-300 hover:text-white hover:bg-white/5 transition-colors whitespace-nowrap"
+                className="clay-btn-secondary px-4 py-2.5 text-sm font-semibold cursor-pointer"
               >
                 Choose Another
               </button>
@@ -306,7 +306,7 @@ export function AvatarCropModal({ isOpen, onClose, onUploadComplete }: AvatarCro
                 type="button"
                 disabled={uploading}
                 onClick={() => void handleSaveCrop()}
-                className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-lg bg-amber-500 text-slate-950 hover:bg-amber-400 disabled:opacity-60 transition-colors whitespace-nowrap"
+                className="clay-btn-primary inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold disabled:opacity-60 cursor-pointer"
               >
                 <Check className="w-4 h-4" />
                 {uploading ? 'Uploading...' : 'Save Picture'}
@@ -316,7 +316,7 @@ export function AvatarCropModal({ isOpen, onClose, onUploadComplete }: AvatarCro
         )}
 
         {error && (
-          <p className="mt-4 text-sm text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2">
+          <p className="mt-4 text-sm text-rose-300 bg-rose-500/15 border border-rose-500/25 rounded-2xl px-3.5 py-2.5">
             {error}
           </p>
         )}

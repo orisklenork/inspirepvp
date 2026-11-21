@@ -48,7 +48,7 @@ const WEAPON_COSTS: Record<string, number> = {
   rail_carbine: 900,
 };
 
-interface DbProfileRow {
+export interface DbProfileRow {
   user_id: string;
   player_id: string;
   username: string;
@@ -148,7 +148,7 @@ function serviceHeaders(extra?: Record<string, string>): Record<string, string> 
   };
 }
 
-async function sbRest<T>(pathAndQuery: string, init: RequestInit = {}): Promise<T> {
+export async function sbRest<T>(pathAndQuery: string, init: RequestInit = {}): Promise<T> {
   const { url } = getConfig();
   const res = await fetch(`${url}/rest/v1/${pathAndQuery}`, {
     ...init,
@@ -172,7 +172,7 @@ async function sbRest<T>(pathAndQuery: string, init: RequestInit = {}): Promise<
   return data as T;
 }
 
-function mapProfileRow(row: DbProfileRow): PlayerProfile {
+export function mapProfileRow(row: DbProfileRow): PlayerProfile {
   return {
     userId: row.user_id,
     playerId: row.player_id,
@@ -655,7 +655,8 @@ export async function sbRecordMatchResult(
   const score = Math.max(0, Math.min(20000, Math.round(Number(payload.score) || 0)));
   const durationSec = Math.max(5, Math.min(3600, Math.round(Number(payload.durationSec) || 60)));
   const outcome = payload.outcome === 'victory' ? 'victory' : 'defeat';
-  const mode: GameMode = payload.mode === 'solo_survival' ? 'solo_survival' : 'skirmish_3v3';
+  const allowedModes: GameMode[] = ['1v1_duel', 'training_range', 'skirmish_3v3', 'solo_survival'];
+  const mode: GameMode = allowedModes.includes(payload.mode) ? payload.mode : '1v1_duel';
 
   const coinsEarned = (outcome === 'victory' ? 180 : 75) + kills * 22;
   const xpEarned = (outcome === 'victory' ? 140 : 60) + kills * 18;

@@ -169,14 +169,14 @@ export function SettingsView({
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-slate-100">Profile Settings</h1>
+        <h1 className="text-3xl font-bold text-slate-100">Account Settings</h1>
         <p className="text-sm text-slate-400 mt-1">
-          Manage your username, password, profile picture, bio, and session security.
+          Manage your username, password, profile picture, bio, and active session.
         </p>
       </div>
 
       {/* Avatar & Picture Card */}
-      <div className="rounded-2xl bg-[#151C28] border border-white/10 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="clay-card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <PlayerAvatar
             profilePictureUrl={profile.profilePictureUrl}
@@ -197,7 +197,7 @@ export function SettingsView({
           <button
             type="button"
             onClick={onOpenAvatarUpload}
-            className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs px-4 py-2.5 cursor-pointer whitespace-nowrap"
+            className="clay-btn-primary inline-flex items-center gap-2 font-bold text-xs px-4 py-2.5 cursor-pointer whitespace-nowrap"
           >
             <Upload className="w-3.5 h-3.5" />
             <span>Upload Picture</span>
@@ -206,7 +206,7 @@ export function SettingsView({
             <button
               type="button"
               onClick={() => void onRemoveAvatarPicture()}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#0B0F17] hover:bg-rose-500/15 border border-white/10 text-rose-300 text-xs font-semibold px-3.5 py-2.5 cursor-pointer whitespace-nowrap"
+              className="clay-btn-secondary inline-flex items-center gap-1.5 text-rose-300 text-xs font-semibold px-3.5 py-2.5 cursor-pointer whitespace-nowrap"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>Remove Picture</span>
@@ -215,9 +215,9 @@ export function SettingsView({
           <button
             type="button"
             onClick={() => onNavigate('customize')}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[#1C2536] hover:bg-[#243046] border border-white/10 text-slate-200 text-xs font-semibold px-3.5 py-2.5 cursor-pointer whitespace-nowrap"
+            className="clay-btn-secondary inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2.5 cursor-pointer whitespace-nowrap"
           >
-            <Sliders className="w-3.5 h-3.5" />
+            <Sliders className="w-3.5 h-3.5 text-orange-400" />
             <span>Customize Appearance</span>
           </button>
         </div>
@@ -226,7 +226,7 @@ export function SettingsView({
       {/* Edit Profile & Username */}
       <form
         onSubmit={(e) => void handleSaveAccountProfile(e)}
-        className="rounded-2xl bg-[#151C28] border border-white/10 p-6 space-y-4"
+        className="clay-card p-6 space-y-4"
       >
         <h2 className="text-xl font-bold text-slate-100">Edit Profile & Username</h2>
 
@@ -244,7 +244,7 @@ export function SettingsView({
               maxLength={20}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-xl bg-[#0B0F17] border border-white/10 px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500"
+              className="clay-input w-full px-3.5 py-2.5 text-sm text-slate-100"
             />
             {usernameCheck.message && (
               <p
@@ -275,7 +275,7 @@ export function SettingsView({
               maxLength={28}
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full rounded-xl bg-[#0B0F17] border border-white/10 px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500"
+              className="clay-input w-full px-3.5 py-2.5 text-sm text-slate-100"
             />
           </div>
         </div>
@@ -290,13 +290,13 @@ export function SettingsView({
             maxLength={220}
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            className="w-full rounded-xl bg-[#0B0F17] border border-white/10 px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500 resize-none"
+            className="clay-input w-full px-3.5 py-2.5 text-sm text-slate-100 resize-none"
           />
         </div>
 
         {profileMsg && (
           <div
-            className={`flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm border ${
+            className={`flex items-center gap-2 rounded-2xl px-3.5 py-2.5 text-sm border ${
               profileMsg.type === 'success'
                 ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300'
                 : 'bg-rose-500/10 border-rose-500/25 text-rose-300'
@@ -315,7 +315,7 @@ export function SettingsView({
           <button
             type="submit"
             disabled={savingProfile}
-            className="rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm px-5 py-2.5 disabled:opacity-60 cursor-pointer"
+            className="clay-btn-primary font-bold text-sm px-5 py-2.5 disabled:opacity-60 cursor-pointer"
           >
             {savingProfile ? 'Saving...' : 'Save Account Details'}
           </button>
@@ -325,7 +325,7 @@ export function SettingsView({
       {/* Change Password */}
       <form
         onSubmit={(e) => void handlePasswordSubmit(e)}
-        className="rounded-2xl bg-[#151C28] border border-white/10 p-6 space-y-4"
+        className="clay-card p-6 space-y-4"
       >
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-slate-100">Change Password</h2>
@@ -352,7 +352,7 @@ export function SettingsView({
               type={showPasswords ? 'text' : 'password'}
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="w-full rounded-xl bg-[#0B0F17] border border-white/10 px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500"
+              className="clay-input w-full px-3.5 py-2.5 text-sm text-slate-100"
             />
           </div>
           <div>
@@ -367,7 +367,7 @@ export function SettingsView({
               type={showPasswords ? 'text' : 'password'}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full rounded-xl bg-[#0B0F17] border border-white/10 px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500"
+              className="clay-input w-full px-3.5 py-2.5 text-sm text-slate-100"
             />
           </div>
           <div>
@@ -382,14 +382,14 @@ export function SettingsView({
               type={showPasswords ? 'text' : 'password'}
               value={confirmNewPassword}
               onChange={(e) => setConfirmNewPassword(e.target.value)}
-              className="w-full rounded-xl bg-[#0B0F17] border border-white/10 px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500"
+              className="clay-input w-full px-3.5 py-2.5 text-sm text-slate-100"
             />
           </div>
         </div>
 
         {passwordMsg && (
           <div
-            className={`flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm border ${
+            className={`flex items-center gap-2 rounded-2xl px-3.5 py-2.5 text-sm border ${
               passwordMsg.type === 'success'
                 ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300'
                 : 'bg-rose-500/10 border-rose-500/25 text-rose-300'
@@ -408,7 +408,7 @@ export function SettingsView({
           <button
             type="submit"
             disabled={savingPassword}
-            className="rounded-xl bg-[#1C2536] hover:bg-[#253147] border border-white/10 text-slate-100 font-semibold text-sm px-5 py-2.5 disabled:opacity-60 cursor-pointer"
+            className="clay-btn-secondary font-semibold text-sm px-5 py-2.5 disabled:opacity-60 cursor-pointer"
           >
             {savingPassword ? 'Updating...' : 'Update Password'}
           </button>
@@ -416,7 +416,7 @@ export function SettingsView({
       </form>
 
       {/* Session & Logout */}
-      <div className="rounded-2xl bg-[#151C28] border border-white/10 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="clay-card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold text-slate-100">Session & Sign Out</h2>
           <p className="text-xs text-slate-400 mt-0.5">
@@ -427,7 +427,7 @@ export function SettingsView({
         <button
           type="button"
           onClick={() => void onLogout()}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 font-semibold text-sm px-5 py-2.5 cursor-pointer whitespace-nowrap"
+          className="clay-btn-danger inline-flex items-center justify-center gap-2 font-bold text-sm px-5 py-2.5 cursor-pointer whitespace-nowrap"
         >
           <LogOut className="w-4 h-4" />
           <span>Log Out</span>

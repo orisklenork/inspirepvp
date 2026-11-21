@@ -41,7 +41,7 @@ export function PlayerInfoModal({ player, onClose }: PlayerInfoModalProps) {
       onClick={onClose}
     >
       <div
-        className={`w-full max-w-lg rounded-2xl bg-[#151C28] border ${theme.borderClass} overflow-hidden shadow-2xl`}
+        className={`clay-card w-full max-w-lg overflow-hidden border ${theme.borderClass}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className={`relative h-32 bg-gradient-to-br ${bg.gradientClass}`}>
@@ -53,12 +53,12 @@ export function PlayerInfoModal({ player, onClose }: PlayerInfoModalProps) {
               className="w-full h-full object-cover opacity-55"
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#151C28] via-[#151C28]/45 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1a2236] via-[#1a2236]/45 to-transparent" />
           <button
             type="button"
             onClick={onClose}
             aria-label="Close player information"
-            className="absolute top-3 right-3 p-2 rounded-lg bg-black/45 text-slate-200 hover:bg-black/70 transition-colors"
+            className="clay-btn-secondary absolute top-3 right-3 p-2 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -75,10 +75,7 @@ export function PlayerInfoModal({ player, onClose }: PlayerInfoModalProps) {
                 size="lg"
               />
               <div className="pb-1 min-w-0">
-                <h2
-                  id="player-info-heading"
-                  className="text-2xl font-bold text-slate-100 truncate"
-                >
+                <h2 id="player-info-heading" className="font-display text-2xl font-bold text-white truncate">
                   {profile.displayName}
                 </h2>
                 <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
@@ -90,53 +87,51 @@ export function PlayerInfoModal({ player, onClose }: PlayerInfoModalProps) {
             </div>
             <div className="text-right shrink-0 pb-1">
               <p className="text-xs text-slate-400">Level</p>
-              <p className={`text-xl font-bold font-display tabular-nums ${theme.badgeTextClass}`}>
+              <p className={`text-2xl font-bold font-display tabular-nums ${theme.badgeTextClass}`}>
                 {profile.level}
               </p>
             </div>
           </div>
 
           <p className="mt-4 text-sm text-slate-300 leading-relaxed">
-            {profile.bio || 'No tactical bio set.'}
+            {profile.bio || 'Ready for 1v1 combat.'}
           </p>
 
           <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-xl bg-[#0B0F17] border border-white/5 p-3">
+            <div className="clay-inset p-3">
               <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                <Shield className="w-3.5 h-3.5 text-amber-400" />
-                <span>Selected Character</span>
+                <Shield className="w-3.5 h-3.5 text-orange-400" />
+                <span>Operative</span>
               </div>
-              <p className="font-semibold text-slate-100 mt-1">{character.name}</p>
+              <p className="font-bold text-white mt-1">{character.name}</p>
             </div>
-            <div className="rounded-xl bg-[#0B0F17] border border-white/5 p-3">
+            <div className="clay-inset p-3">
               <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                <Crosshair className="w-3.5 h-3.5 text-amber-400" />
-                <span>Favorite Weapon</span>
+                <Crosshair className="w-3.5 h-3.5 text-orange-400" />
+                <span>Favorite Gun</span>
               </div>
-              <p className="font-semibold text-slate-100 mt-1">{weapon.name}</p>
+              <p className="font-bold text-white mt-1">{weapon.name}</p>
             </div>
           </div>
 
           <div className="mt-4 grid grid-cols-4 gap-2 text-center">
-            <div className="rounded-xl bg-[#0B0F17] border border-white/5 p-2.5">
+            <div className="clay-inset p-2.5">
               <p className="text-xs text-slate-400">Kills</p>
-              <p className="text-base font-semibold text-slate-100 tabular-nums mt-0.5">
-                {stats.totalKills}
-              </p>
+              <p className="text-base font-bold text-white tabular-nums mt-0.5">{stats.totalKills}</p>
             </div>
-            <div className="rounded-xl bg-[#0B0F17] border border-white/5 p-2.5">
+            <div className="clay-inset p-2.5">
               <p className="text-xs text-slate-400">K/D</p>
-              <p className="text-base font-semibold text-slate-100 tabular-nums mt-0.5">{kd}</p>
+              <p className="text-base font-bold text-white tabular-nums mt-0.5">{kd}</p>
             </div>
-            <div className="rounded-xl bg-[#0B0F17] border border-white/5 p-2.5">
+            <div className="clay-inset p-2.5">
               <p className="text-xs text-slate-400">Win Rate</p>
-              <p className="text-base font-semibold text-emerald-400 tabular-nums mt-0.5">
+              <p className="text-base font-bold text-emerald-400 tabular-nums mt-0.5">
                 {stats.winRate}%
               </p>
             </div>
-            <div className="rounded-xl bg-[#0B0F17] border border-white/5 p-2.5">
+            <div className="clay-inset p-2.5">
               <p className="text-xs text-slate-400">Matches</p>
-              <p className="text-base font-semibold text-slate-100 tabular-nums mt-0.5">
+              <p className="text-base font-bold text-white tabular-nums mt-0.5">
                 {stats.totalMatchesPlayed}
               </p>
             </div>
@@ -145,7 +140,7 @@ export function PlayerInfoModal({ player, onClose }: PlayerInfoModalProps) {
           {profile.showcaseBadges.length > 0 && (
             <div className="mt-4 pt-4 border-t border-white/10">
               <p className="text-xs font-medium text-slate-400 mb-2 flex items-center gap-1.5">
-                <Award className="w-3.5 h-3.5 text-amber-400" />
+                <Award className="w-3.5 h-3.5 text-orange-400" />
                 <span>Showcase Badges</span>
               </p>
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-200">

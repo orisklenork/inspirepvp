@@ -51,9 +51,7 @@ export function AuthScreen({
   useEffect(() => {
     if (!isOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
+      if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
@@ -181,30 +179,30 @@ export function AuthScreen({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl bg-[#151C28] border border-white/10 p-6 sm:p-8 shadow-2xl relative"
+        className="clay-card w-full max-w-md p-6 sm:p-8 relative"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
-          <span className="font-display text-xl font-bold tracking-wider text-slate-100">
-            InspiredPVP
+          <span className="font-display text-2xl font-extrabold tracking-wider text-white">
+            Inspired<span className="text-orange-400">PVP</span>
           </span>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Back to home page"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+            aria-label="Close dialog"
+            className="clay-btn-secondary p-2 cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-[#0B0F17] border border-white/5 mb-6">
+        <div className="clay-inset grid grid-cols-2 gap-1.5 p-1.5 mb-6">
           <button
             type="button"
             onClick={() => setMode('login')}
-            className={`py-2.5 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
+            className={`py-2.5 text-sm font-bold rounded-xl transition-colors cursor-pointer ${
               mode === 'login'
-                ? 'bg-[#1C2536] text-amber-400 shadow-sm'
+                ? 'bg-[#2a3652] text-orange-400 shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -213,9 +211,9 @@ export function AuthScreen({
           <button
             type="button"
             onClick={() => setMode('register')}
-            className={`py-2.5 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
+            className={`py-2.5 text-sm font-bold rounded-xl transition-colors cursor-pointer ${
               mode === 'register'
-                ? 'bg-[#1C2536] text-amber-400 shadow-sm'
+                ? 'bg-[#2a3652] text-orange-400 shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -224,22 +222,19 @@ export function AuthScreen({
         </div>
 
         <div className="mb-5">
-          <h2 id="auth-modal-heading" className="text-2xl font-bold text-slate-100">
-            {mode === 'login' ? 'Sign In to InspiredPVP' : 'Create InspiredPVP Account'}
+          <h2 id="auth-modal-heading" className="font-display text-3xl font-bold text-white">
+            {mode === 'login' ? 'Sign In to Lobby' : 'Instant Operative Account'}
           </h2>
           <p className="text-sm text-slate-400 mt-1">
             {mode === 'login'
-              ? 'Enter your username and password to enter the lobby.'
-              : 'No email or phone required. Pick a username and enter the lobby immediately.'}
+              ? 'Enter your username and password to deploy.'
+              : 'Username and password only — zero email or phone needed.'}
           </p>
         </div>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
           <div>
-            <label
-              htmlFor="auth-username"
-              className="block text-sm font-medium text-slate-200 mb-1.5"
-            >
+            <label htmlFor="auth-username" className="block text-xs font-bold text-slate-300 mb-1.5">
               Username
             </label>
             <input
@@ -249,7 +244,7 @@ export function AuthScreen({
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="e.g. ApexStriker_01"
-              className="w-full rounded-xl bg-[#0B0F17] border border-white/10 px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+              className="clay-input w-full px-4 py-3 text-sm text-white placeholder:text-slate-500"
             />
             {mode === 'register' && username.trim().length > 0 && (
               <div className="mt-1.5 flex items-center gap-1.5 text-xs">
@@ -274,10 +269,7 @@ export function AuthScreen({
           </div>
 
           <div>
-            <label
-              htmlFor="auth-password"
-              className="block text-sm font-medium text-slate-200 mb-1.5"
-            >
+            <label htmlFor="auth-password" className="block text-xs font-bold text-slate-300 mb-1.5">
               Password
             </label>
             <div className="relative">
@@ -288,13 +280,13 @@ export function AuthScreen({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={mode === 'register' ? 'At least 6 characters' : 'Enter password'}
-                className="w-full rounded-xl bg-[#0B0F17] border border-white/10 pl-4 pr-11 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+                className="clay-input w-full pl-4 pr-11 py-3 text-sm text-white placeholder:text-slate-500"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-200"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white cursor-pointer"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -305,7 +297,7 @@ export function AuthScreen({
             <div>
               <label
                 htmlFor="auth-confirm-password"
-                className="block text-sm font-medium text-slate-200 mb-1.5"
+                className="block text-xs font-bold text-slate-300 mb-1.5"
               >
                 Confirm Password
               </label>
@@ -317,44 +309,36 @@ export function AuthScreen({
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter password"
-                  className="w-full rounded-xl bg-[#0B0F17] border border-white/10 pl-4 pr-11 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+                  className="clay-input w-full pl-4 pr-11 py-3 text-sm text-white placeholder:text-slate-500"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword((prev) => !prev)}
-                  aria-label={
-                    showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'
-                  }
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-200"
+                  aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white cursor-pointer"
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
           )}
 
           {mode === 'login' && (
-            <div className="flex items-center justify-between pt-1">
-              <label className="inline-flex items-center gap-2 text-sm text-slate-300 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded border-white/20 bg-[#0B0F17] accent-amber-500"
-                />
-                <span>Remember login session</span>
-              </label>
-            </div>
+            <label className="inline-flex items-center gap-2 text-sm text-slate-300 cursor-pointer select-none pt-1">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 rounded accent-orange-500"
+              />
+              <span>Remember login session</span>
+            </label>
           )}
 
           {error && (
             <div
               role="alert"
-              className="flex items-start gap-2 rounded-xl bg-rose-500/10 border border-rose-500/25 px-3.5 py-2.5 text-sm text-rose-300"
+              className="flex items-start gap-2 rounded-2xl bg-rose-500/15 border border-rose-400/30 px-4 py-3 text-sm text-rose-200"
             >
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{error}</span>
@@ -364,7 +348,7 @@ export function AuthScreen({
           <button
             type="submit"
             disabled={submitting}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm py-3 px-4 transition-colors disabled:opacity-60 cursor-pointer"
+            className="clay-btn-primary w-full inline-flex items-center justify-center gap-2 font-bold text-base py-3.5 px-4 disabled:opacity-60 cursor-pointer"
           >
             {submitting ? (
               <>
@@ -373,38 +357,12 @@ export function AuthScreen({
               </>
             ) : (
               <>
-                <span>{mode === 'login' ? 'Log In to Lobby' : 'Create Account'}</span>
+                <span>{mode === 'login' ? 'Enter Lobby' : 'Create Account'}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>
         </form>
-
-        <p className="mt-5 text-xs text-center text-slate-400">
-          {mode === 'login' ? (
-            <>
-              New operative?{' '}
-              <button
-                type="button"
-                onClick={() => setMode('register')}
-                className="text-amber-400 hover:underline font-medium cursor-pointer"
-              >
-                Create an account instantly
-              </button>
-            </>
-          ) : (
-            <>
-              Already have an account?{' '}
-              <button
-                type="button"
-                onClick={() => setMode('login')}
-                className="text-amber-400 hover:underline font-medium cursor-pointer"
-              >
-                Sign in here
-              </button>
-            </>
-          )}
-        </p>
       </div>
     </div>
   );

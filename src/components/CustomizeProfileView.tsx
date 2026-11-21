@@ -190,14 +190,14 @@ export function CustomizeProfileView({
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-100">Avatar & Profile Customization</h1>
+          <h1 className="text-3xl font-bold text-slate-100">Avatar & Armory Customization</h1>
           <p className="text-sm text-slate-400 mt-1">
-            Personalize your portrait, frame, background, bio, and combat loadout with a live preview.
+            Personalize your portrait, banner, operative class, and 3D weapon loadout.
           </p>
         </div>
-        <div className="inline-flex items-center gap-2 text-sm font-semibold text-amber-400 tabular-nums">
+        <div className="clay-panel px-4 py-2 inline-flex items-center gap-2 text-sm font-bold text-amber-400 tabular-nums">
           <Coins className="w-4 h-4" />
-          <span>{profile.coins.toLocaleString()} Coins Available</span>
+          <span>{profile.coins.toLocaleString()} Coins</span>
         </div>
       </div>
 
@@ -205,19 +205,19 @@ export function CustomizeProfileView({
         {/* Left Controls */}
         <div className="lg:col-span-7 space-y-6">
           {/* Profile Picture & Default Avatars */}
-          <div className="rounded-2xl bg-[#151C28] border border-white/10 p-6 space-y-5">
+          <div className="clay-card p-6 space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl font-bold text-slate-100">Profile Picture & Avatar</h2>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Upload a custom photo (JPG, PNG, WEBP) or choose a tactical operative portrait.
+                  Upload a custom photo (JPG, PNG, WEBP) or choose an operative portrait.
                 </p>
               </div>
               <div className="flex items-center gap-2.5">
                 <button
                   type="button"
                   onClick={onOpenAvatarUpload}
-                  className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs px-4 py-2.5 cursor-pointer whitespace-nowrap"
+                  className="clay-btn-primary inline-flex items-center gap-2 font-bold text-xs px-4 py-2.5 cursor-pointer whitespace-nowrap"
                 >
                   <Upload className="w-3.5 h-3.5" />
                   <span>{profile.profilePictureUrl ? 'Change Picture' : 'Upload Picture'}</span>
@@ -226,7 +226,7 @@ export function CustomizeProfileView({
                   <button
                     type="button"
                     onClick={() => void onRemoveAvatarPicture()}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#0B0F17] hover:bg-rose-500/15 border border-white/10 text-rose-300 text-xs font-semibold px-3.5 py-2.5 cursor-pointer whitespace-nowrap"
+                    className="clay-btn-secondary inline-flex items-center gap-1.5 text-rose-300 text-xs font-semibold px-3.5 py-2.5 cursor-pointer whitespace-nowrap"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Remove</span>
@@ -247,10 +247,10 @@ export function CustomizeProfileView({
                       key={av.id}
                       type="button"
                       onClick={() => setSelectedAvatarId(av.id)}
-                      className={`rounded-xl p-2 border text-center transition-colors cursor-pointer ${
+                      className={`rounded-2xl p-2 border text-center transition-all cursor-pointer ${
                         active
-                          ? 'bg-amber-500/10 border-amber-500'
-                          : 'bg-[#0B0F17] border-white/5 hover:border-white/20'
+                          ? 'bg-orange-500/15 border-orange-500 shadow-[0_0_0_2px_rgba(255,122,47,0.2)]'
+                          : 'clay-inset hover:border-white/20'
                       }`}
                     >
                       <div className="flex justify-center">
@@ -271,7 +271,7 @@ export function CustomizeProfileView({
           </div>
 
           {/* Identity & Bio */}
-          <div className="rounded-2xl bg-[#151C28] border border-white/10 p-6 space-y-4">
+          <div className="clay-card p-6 space-y-4">
             <h2 className="text-xl font-bold text-slate-100">Identity & Bio</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -287,7 +287,7 @@ export function CustomizeProfileView({
                   maxLength={28}
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full rounded-xl bg-[#0B0F17] border border-white/10 px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500"
+                  className="clay-input w-full px-3.5 py-2.5 text-sm text-slate-100"
                 />
               </div>
 
@@ -304,7 +304,7 @@ export function CustomizeProfileView({
                   maxLength={20}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full rounded-xl bg-[#0B0F17] border border-white/10 px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500"
+                  className="clay-input w-full px-3.5 py-2.5 text-sm text-slate-100"
                 />
                 {usernameStatus.message && (
                   <p
@@ -336,13 +336,13 @@ export function CustomizeProfileView({
                 maxLength={220}
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="w-full rounded-xl bg-[#0B0F17] border border-white/10 px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500 resize-none"
+                className="clay-input w-full px-3.5 py-2.5 text-sm text-slate-100 resize-none"
               />
             </div>
           </div>
 
           {/* Background & Theme Frame */}
-          <div className="rounded-2xl bg-[#151C28] border border-white/10 p-6 space-y-5">
+          <div className="clay-card p-6 space-y-5">
             <h2 className="text-xl font-bold text-slate-100">Profile Theme & Background</h2>
 
             <div>
@@ -355,14 +355,14 @@ export function CustomizeProfileView({
                       key={t.id}
                       type="button"
                       onClick={() => setProfileThemeId(t.id)}
-                      className={`rounded-xl p-2.5 border text-left transition-colors cursor-pointer ${
+                      className={`rounded-2xl p-2.5 border text-left transition-all cursor-pointer ${
                         active
-                          ? 'bg-[#1C2536] border-amber-500'
-                          : 'bg-[#0B0F17] border-white/5 hover:border-white/20'
+                          ? 'bg-orange-500/15 border-orange-500'
+                          : 'clay-inset hover:border-white/20'
                       }`}
                     >
                       <span
-                        className="block w-5 h-5 rounded-md mb-1.5"
+                        className="block w-5 h-5 rounded-lg mb-1.5"
                         style={{ backgroundColor: t.accentHex }}
                       />
                       <span className="text-xs font-medium text-slate-200 block truncate">
@@ -384,9 +384,9 @@ export function CustomizeProfileView({
                       key={b.id}
                       type="button"
                       onClick={() => setProfileBackgroundId(b.id)}
-                      className={`relative h-20 rounded-xl overflow-hidden border text-left transition-colors cursor-pointer bg-gradient-to-br ${
+                      className={`relative h-20 rounded-2xl overflow-hidden border text-left transition-all cursor-pointer bg-gradient-to-br ${
                         b.gradientClass
-                      } ${active ? 'border-amber-500 ring-1 ring-amber-500' : 'border-white/10'}`}
+                      } ${active ? 'border-orange-500 ring-2 ring-orange-500/40' : 'border-white/10'}`}
                     >
                       {b.imageUrl && (
                         <img
@@ -407,11 +407,11 @@ export function CustomizeProfileView({
           </div>
 
           {/* Character, Weapons & Showcase Badges */}
-          <div className="rounded-2xl bg-[#151C28] border border-white/10 p-6 space-y-5">
+          <div className="clay-card p-6 space-y-5">
             <h2 className="text-xl font-bold text-slate-100">Character, Armory & Badges</h2>
 
             <div>
-              <p className="text-xs font-medium text-slate-400 mb-2.5">Selected Character</p>
+              <p className="text-xs font-medium text-slate-400 mb-2.5">Selected 3D Operative</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {CHARACTERS.map((c) => {
                   const active = selectedCharacterId === c.id;
@@ -420,10 +420,10 @@ export function CustomizeProfileView({
                       key={c.id}
                       type="button"
                       onClick={() => setSelectedCharacterId(c.id)}
-                      className={`rounded-xl p-3.5 border text-left transition-colors cursor-pointer ${
+                      className={`rounded-2xl p-3.5 border text-left transition-all cursor-pointer ${
                         active
-                          ? 'bg-amber-500/10 border-amber-500'
-                          : 'bg-[#0B0F17] border-white/5 hover:border-white/20'
+                          ? 'bg-orange-500/15 border-orange-500'
+                          : 'clay-inset hover:border-white/20'
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -439,7 +439,7 @@ export function CustomizeProfileView({
 
             <div>
               <p className="text-xs font-medium text-slate-400 mb-2.5">
-                Favorite Weapon & Armory Unlocks
+                Primary Weapon & Armory Unlocks
               </p>
               <div className="space-y-2.5">
                 {WEAPONS.map((w) => {
@@ -448,10 +448,8 @@ export function CustomizeProfileView({
                   return (
                     <div
                       key={w.id}
-                      className={`rounded-xl p-3.5 border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                        active
-                          ? 'bg-amber-500/10 border-amber-500'
-                          : 'bg-[#0B0F17] border-white/5'
+                      className={`rounded-2xl p-3.5 border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                        active ? 'bg-orange-500/15 border-orange-500' : 'clay-inset'
                       }`}
                     >
                       <div>
@@ -466,20 +464,20 @@ export function CustomizeProfileView({
                         <button
                           type="button"
                           onClick={() => setFavoriteWeaponId(w.id)}
-                          className={`px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer ${
+                          className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap cursor-pointer ${
                             active
-                              ? 'bg-amber-500 text-slate-950'
-                              : 'bg-[#1C2536] text-slate-200 hover:bg-[#263248]'
+                              ? 'clay-btn-primary'
+                              : 'clay-btn-secondary'
                           }`}
                         >
-                          {active ? 'Equipped Favorite' : 'Set Favorite'}
+                          {active ? 'Equipped' : 'Equip'}
                         </button>
                       ) : (
                         <button
                           type="button"
                           disabled={profile.coins < w.costCoins || unlockingId === w.id}
                           onClick={() => void handleUnlockWeapon(w.id)}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-[#1C2536] hover:bg-amber-500 hover:text-slate-950 text-amber-400 disabled:opacity-45 cursor-pointer whitespace-nowrap transition-colors"
+                          className="clay-btn-secondary inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-amber-400 disabled:opacity-45 cursor-pointer whitespace-nowrap"
                         >
                           <Lock className="w-3.5 h-3.5" />
                           <span>
@@ -507,12 +505,12 @@ export function CustomizeProfileView({
                       type="button"
                       disabled={!unlocked}
                       onClick={() => toggleBadge(b.id)}
-                      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium border transition-colors ${
+                      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium border transition-colors ${
                         !unlocked
-                          ? 'bg-[#0B0F17]/40 border-white/5 text-slate-600 cursor-not-allowed'
+                          ? 'bg-[#0e1422]/40 border-white/5 text-slate-600 cursor-not-allowed'
                           : selected
-                            ? 'bg-amber-500/15 border-amber-500 text-amber-300 cursor-pointer'
-                            : 'bg-[#0B0F17] border-white/10 text-slate-300 hover:border-white/25 cursor-pointer'
+                            ? 'bg-orange-500/15 border-orange-500 text-orange-300 cursor-pointer'
+                            : 'clay-inset text-slate-300 hover:border-white/25 cursor-pointer'
                       }`}
                     >
                       {selected && <Check className="w-3 h-3" />}
@@ -527,13 +525,13 @@ export function CustomizeProfileView({
 
         {/* Right Sticky Live Preview */}
         <div className="lg:col-span-5 lg:sticky lg:top-24 space-y-4">
-          <div className="rounded-2xl bg-[#151C28] border border-white/10 p-5">
+          <div className="clay-card p-5">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-bold text-slate-100">Live Profile Preview</h2>
               <span className="text-xs text-slate-400">Updates before saving</span>
             </div>
 
-            <div className={`rounded-xl bg-[#0B0F17] border ${previewTheme.borderClass} overflow-hidden`}>
+            <div className={`clay-inset border ${previewTheme.borderClass} overflow-hidden`}>
               <div className={`relative h-28 bg-gradient-to-br ${previewBg.gradientClass}`}>
                 {previewBg.imageUrl && (
                   <img
@@ -543,7 +541,7 @@ export function CustomizeProfileView({
                     className="w-full h-full object-cover opacity-55"
                   />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-[#0B0F17]/35 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#101624] via-[#101624]/35 to-transparent" />
               </div>
 
               <div className="px-5 pb-5 -mt-10 relative">
@@ -572,12 +570,12 @@ export function CustomizeProfileView({
                 </p>
 
                 <div className="mt-4 grid grid-cols-2 gap-2.5 text-xs">
-                  <div className="rounded-lg bg-[#151C28] border border-white/5 p-2.5">
-                    <span className="text-slate-400">Character</span>
+                  <div className="clay-panel p-2.5">
+                    <span className="text-slate-400">Operative</span>
                     <p className="font-semibold text-slate-100 mt-0.5">{previewChar.name}</p>
                   </div>
-                  <div className="rounded-lg bg-[#151C28] border border-white/5 p-2.5">
-                    <span className="text-slate-400">Favorite Weapon</span>
+                  <div className="clay-panel p-2.5">
+                    <span className="text-slate-400">Primary Gun</span>
                     <p className="font-semibold text-slate-100 mt-0.5">{previewWeapon.name}</p>
                   </div>
                 </div>
@@ -592,19 +590,19 @@ export function CustomizeProfileView({
                 )}
 
                 <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-                  <div className="rounded-lg bg-[#151C28] p-2">
+                  <div className="clay-panel p-2">
                     <span className="text-slate-400 block">Kills</span>
                     <span className="font-semibold text-slate-100 tabular-nums">
                       {stats.totalKills}
                     </span>
                   </div>
-                  <div className="rounded-lg bg-[#151C28] p-2">
+                  <div className="clay-panel p-2">
                     <span className="text-slate-400 block">Wins</span>
                     <span className="font-semibold text-emerald-400 tabular-nums">
                       {stats.totalWins}
                     </span>
                   </div>
-                  <div className="rounded-lg bg-[#151C28] p-2">
+                  <div className="clay-panel p-2">
                     <span className="text-slate-400 block">Win Rate</span>
                     <span className="font-semibold text-slate-100 tabular-nums">
                       {stats.winRate}%
@@ -616,7 +614,7 @@ export function CustomizeProfileView({
 
             {feedback && (
               <div
-                className={`mt-4 flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm border ${
+                className={`mt-4 flex items-center gap-2 rounded-2xl px-3.5 py-2.5 text-sm border ${
                   feedback.type === 'success'
                     ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300'
                     : 'bg-rose-500/10 border-rose-500/25 text-rose-300'
@@ -635,7 +633,7 @@ export function CustomizeProfileView({
               type="button"
               disabled={saving}
               onClick={() => void handleSave()}
-              className="mt-4 w-full rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm py-3 px-4 transition-colors disabled:opacity-60 cursor-pointer"
+              className="clay-btn-primary mt-4 w-full font-bold text-sm py-3 px-4 disabled:opacity-60 cursor-pointer"
             >
               {saving ? 'Saving Changes...' : 'Save Profile Changes'}
             </button>

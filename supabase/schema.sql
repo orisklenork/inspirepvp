@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS public.player_statistics (
 CREATE TABLE IF NOT EXISTS public.matches (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  mode TEXT NOT NULL CHECK (mode IN ('skirmish_3v3', 'solo_survival')),
+  mode TEXT NOT NULL CHECK (mode IN ('1v1_duel', 'training_range', 'skirmish_3v3', 'solo_survival')),
   outcome TEXT NOT NULL CHECK (outcome IN ('victory', 'defeat')),
   kills INTEGER NOT NULL DEFAULT 0 CHECK (kills >= 0),
   deaths INTEGER NOT NULL DEFAULT 0 CHECK (deaths >= 0),
@@ -62,6 +62,12 @@ CREATE TABLE IF NOT EXISTS public.matches (
   participants JSONB NOT NULL DEFAULT '[]'::jsonb,
   played_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Ensure existing databases also accept 1v1_duel and training_range modes
+ALTER TABLE public.matches DROP CONSTRAINT IF EXISTS matches_mode_check;
+ALTER TABLE public.matches
+  ADD CONSTRAINT matches_mode_check
+  CHECK (mode IN ('1v1_duel', 'training_range', 'skirmish_3v3', 'solo_survival'));
 
 CREATE INDEX IF NOT EXISTS idx_profiles_player_id ON public.profiles(player_id);
 CREATE INDEX IF NOT EXISTS idx_matches_user_played ON public.matches(user_id, played_at DESC);
@@ -238,7 +244,73 @@ CREATE POLICY "Users can delete own avatar"
     AND (storage.foldername(name))[1] = auth.uid()::text
   );
 
--- 9. Explicit PostgreSQL privileges for API & server roles
+-- 9. Live Multiplayer Tables (1v1 Rooms, Invites, Random Matchmaking Queue, Online Presence)
+CREATE TABLE IF NOT EXISTS public.player_presence (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  player_id TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'online' CHECK (status IN ('online', 'in_room', 'in_match')),
+  current_room_code TEXT,
+  last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.game_rooms (
+  code TEXT PRIMARY KEY,
+  host_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  host_player_id TEXT NOT NULL,
+  guest_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  guest_player_id TEXT,
+  status TEXT NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting', 'playing', 'finished')),
+  mode TEXT NOT NULL DEFAULT '1v1_duel' CHECK (mode IN ('1v1_duel')),
+  max_kills INTEGER NOT NULL DEFAULT 5 CHECK (max_kills BETWEEN 1 AND 20),
+  host_ready BOOLEAN NOT NULL DEFAULT TRUE,
+  guest_ready BOOLEAN NOT NULL DEFAULT FALSE,
+  host_kills INTEGER NOT NULL DEFAULT 0,
+  guest_kills INTEGER NOT NULL DEFAULT 0,
+  host_deaths INTEGER NOT NULL DEFAULT 0,
+  guest_deaths INTEGER NOT NULL DEFAULT 0,
+  host_state JSONB NOT NULL DEFAULT '{}'::jsonb,
+  guest_state JSONB NOT NULL DEFAULT '{}'::jsonb,
+  combat_events JSONB NOT NULL DEFAULT '[]'::jsonb,
+  winner_player_id TEXT,
+  started_at TIMESTAMPTZ,
+  ended_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.room_invites (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  room_code TEXT NOT NULL,
+  from_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  from_player_id TEXT NOT NULL,
+  from_display_name TEXT NOT NULL,
+  from_avatar_url TEXT,
+  to_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  to_player_id TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'expired')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.matchmaking_queue (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  player_id TEXT NOT NULL,
+  display_name TEXT NOT NULL,
+  matched_room_code TEXT,
+  queued_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_presence_last_seen ON public.player_presence(last_seen_at DESC);
+CREATE INDEX IF NOT EXISTS idx_rooms_status ON public.game_rooms(status, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_invites_recipient ON public.room_invites(to_user_id, status, created_at DESC);
+
+ALTER TABLE public.player_presence ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.game_rooms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.room_invites ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.matchmaking_queue ENABLE ROW LEVEL SECURITY;
+
+-- 10. Explicit PostgreSQL privileges for API & server roles
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
@@ -249,4 +321,5 @@ GRANT SELECT, UPDATE ON TABLE public.profiles TO anon, authenticated;
 GRANT SELECT, UPDATE ON TABLE public.player_statistics TO anon, authenticated;
 GRANT SELECT, INSERT ON TABLE public.matches TO authenticated;
 GRANT EXECUTE ON FUNCTION public.check_username_available(TEXT) TO anon, authenticated, service_role;
+
 

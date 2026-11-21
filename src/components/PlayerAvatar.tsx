@@ -12,9 +12,9 @@ interface PlayerAvatarProps {
 }
 
 const SIZE_CLASSES: Record<NonNullable<PlayerAvatarProps['size']>, string> = {
-  xs: 'w-7 h-7',
-  sm: 'w-9 h-9',
-  md: 'w-11 h-11',
+  xs: 'w-8 h-8',
+  sm: 'w-10 h-10',
+  md: 'w-12 h-12',
   lg: 'w-16 h-16',
   xl: 'w-24 h-24',
 };
@@ -33,11 +33,11 @@ export function PlayerAvatar({
   const theme = getThemeById(profileThemeId);
 
   const activeUrl = !imgFailed ? profilePictureUrl || avatarOption.imageUrl : null;
-  const radiusClass = shape === 'circle' ? 'rounded-full' : 'rounded-xl';
+  const radiusClass = shape === 'circle' ? 'rounded-full' : 'rounded-2xl';
 
   return (
     <div
-      className={`relative shrink-0 overflow-hidden bg-[#151C28] ${SIZE_CLASSES[size]} ${radiusClass} ${theme.ringClass} ${className}`}
+      className={`relative shrink-0 overflow-hidden bg-[#141b2c] shadow-[0_6px_14px_rgba(4,7,14,0.6),inset_0_1px_2px_rgba(255,255,255,0.2)] ${SIZE_CLASSES[size]} ${radiusClass} ${theme.ringClass} ${className}`}
     >
       {activeUrl ? (
         <img
@@ -49,7 +49,7 @@ export function PlayerAvatar({
         />
       ) : (
         <div
-          className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1C2536] to-[#0B0F17]"
+          className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#232f48] to-[#101624]"
           aria-label={`${displayName} insignia`}
         >
           {selectedAvatarId === 'emblem_amber' ? (

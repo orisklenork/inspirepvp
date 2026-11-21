@@ -1,9 +1,14 @@
 import type {
+  CombatSyncResponse,
   GameMode,
+  GameRoom,
   MatchParticipantResult,
   MatchRecord,
+  MatchmakingStatus,
+  OnlinePlayerPresence,
   PlayerAccountBundle,
   PublicPlayerInfo,
+  RoomInvite,
 } from '../types/game.ts';
 
 let inMemoryToken: string | null = null;
@@ -174,4 +179,131 @@ export async function fetchPublicPlayer(playerId: string): Promise<PublicPlayerI
     { method: 'GET' }
   );
   return res.player;
+}
+
+export async function pingPresence(
+  status: 'online' | 'in_room' | 'in_match' = 'online',
+  currentRoomCode: string | null = null
+): Promise<{
+  onlinePlayers: OnlinePlayerPresence[];
+  incomingInvites: RoomInvite[];
+  activeRoom: GameRoom | null;
+  matchmaking: MatchmakingStatus;
+}> {
+  return apiRequest('/api/presence/ping', {
+    method: 'POST',
+    body: JSON.stringify({ status, currentRoomCode }),
+  });
+}
+
+export async function fetchOpenRooms(): Promise<GameRoom[]> {
+  const res = await apiRequest<{ rooms: GameRoom[] }>('/api/rooms/open', { method: 'GET' });
+  return res.rooms ?? [];
+}
+
+export async function createBattleRoom(): Promise<GameRoom> {
+  const res = await apiRequest<{ room: GameRoom }>('/api/rooms', { method: 'POST' });
+  return res.room;
+}
+
+export async function joinBattleRoom(code: string): Promise<GameRoom> {
+  const res = await apiRequest<{ room: GameRoom }>('/api/rooms/join', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
+  return res.room;
+}
+
+export async function fetchBattleRoom(code: string): Promise<GameRoom> {
+  const res = await apiRequest<{ room: GameRoom }>(`/api/rooms/${encodeURIComponent(code)}`, {
+    method: 'GET',
+  });
+  return res.room;
+}
+
+export async function setRoomReady(code: string, ready: boolean): Promise<GameRoom> {
+  const res = await apiRequest<{ room: GameRoom }>(
+    `/api/rooms/${encodeURIComponent(code)}/ready`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ ready }),
+    }
+  );
+  return res.room;
+}
+
+export async function startBattleRoom(code: string): Promise<GameRoom> {
+  const res = await apiRequest<{ room: GameRoom }>(
+    `/api/rooms/${encodeURIComponent(code)}/start`,
+    { method: 'POST' }
+  );
+  return res.room;
+}
+
+export async function leaveBattleRoom(code: string): Promise<void> {
+  await apiRequest(`/api/rooms/${encodeURIComponent(code)}/leave`, { method: 'POST' });
+}
+
+export async function sendRoomInvite(
+  targetPlayerId: string,
+  roomCode?: string
+): Promise<{ invite: RoomInvite; room: GameRoom }> {
+  return apiRequest('/api/invites', {
+    method: 'POST',
+    body: JSON.stringify({ targetPlayerId, roomCode }),
+  });
+}
+
+export async function respondToInvite(
+  inviteId: string,
+  accept: boolean
+): Promise<{ status: 'accepted' | 'declined'; room?: GameRoom }> {
+  return apiRequest(`/api/invites/${encodeURIComponent(inviteId)}/respond`, {
+    method: 'POST',
+    body: JSON.stringify({ accept }),
+  });
+}
+
+export async function joinRandomMatchmaking(): Promise<{
+  status: MatchmakingStatus;
+  room: GameRoom | null;
+}> {
+  return apiRequest('/api/matchmaking/join', { method: 'POST' });
+}
+
+export async function leaveRandomMatchmaking(): Promise<void> {
+  await apiRequest('/api/matchmaking/leave', { method: 'POST' });
+}
+
+export async function syncRoomCombat(
+  code: string,
+  payload: {
+    x: number;
+    y: number;
+    z: number;
+    yaw: number;
+    pitch: number;
+    vx: number;
+    vz: number;
+    crouched: boolean;
+    sprinting: boolean;
+    aiming: boolean;
+    reloading: boolean;
+    weaponId: string;
+    characterId: string;
+    seq: number;
+    shotEvent?: {
+      shotSeq: number;
+      origin: [number, number, number];
+      end: [number, number, number];
+      hitOpponent: boolean;
+      damage: number;
+      headshot: boolean;
+    };
+  }
+): Promise<CombatSyncResponse> {
+  return apiRequest(`/api/rooms/${encodeURIComponent(code)}/sync`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
 }

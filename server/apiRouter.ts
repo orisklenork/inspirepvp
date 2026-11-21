@@ -5,15 +5,28 @@ import {
   dataAuthenticateUser,
   dataChangePassword,
   dataCheckUsername,
+  dataCreateRoom,
   dataGetAccountBundle,
+  dataGetOpenRooms,
   dataGetPublicPlayer,
   dataGetRegisteredPlayers,
+  dataGetRoom,
+  dataJoinMatchmaking,
+  dataJoinRoom,
+  dataLeaveMatchmaking,
+  dataLeaveRoom,
+  dataPresencePing,
   dataRecordMatchResult,
   dataRegisterAccount,
   dataRemoveAvatarUpload,
   dataResolveSessionUserId,
+  dataRespondInvite,
   dataRevokeSession,
   dataSaveAvatarUpload,
+  dataSendInvite,
+  dataStartRoomMatch,
+  dataSyncRoomCombat,
+  dataToggleRoomReady,
   dataUnlockWeapon,
   dataUpdateProfile,
 } from './dataService.ts';
@@ -329,6 +342,146 @@ export function attachApiRoutes(app: Express): void {
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     fs.createReadStream(resolved).pipe(res);
+  });
+
+  // Multiplayer Presence, Rooms, Invites, Matchmaking & Live Combat Sync
+  app.post('/api/presence/ping', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { status, currentRoomCode } = req.body ?? {};
+      const validStatus =
+        status === 'in_room' || status === 'in_match' ? status : 'online';
+      const result = await dataPresencePing(
+        req.userId!,
+        validStatus,
+        typeof currentRoomCode === 'string' ? currentRoomCode : null
+      );
+      res.json(result);
+    } catch (err) {
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Presence error.' });
+    }
+  });
+
+  app.get('/api/rooms/open', requireAuth, async (_req: AuthenticatedRequest, res: Response) => {
+    try {
+      const rooms = await dataGetOpenRooms();
+      res.json({ rooms });
+    } catch (err) {
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Failed to list rooms.' });
+    }
+  });
+
+  app.post('/api/rooms', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const room = await dataCreateRoom(req.userId!);
+      res.status(201).json({ room });
+    } catch (err) {
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Could not create room.' });
+    }
+  });
+
+  app.post('/api/rooms/join', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { code } = req.body ?? {};
+      const room = await dataJoinRoom(req.userId!, String(code ?? ''));
+      res.json({ room });
+    } catch (err) {
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Could not join room.' });
+    }
+  });
+
+  app.get('/api/rooms/:code', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const room = await dataGetRoom(req.userId!, String(req.params.code ?? ''));
+      res.json({ room });
+    } catch (err) {
+      res.status(404).json({ error: err instanceof Error ? err.message : 'Room not found.' });
+    }
+  });
+
+  app.post('/api/rooms/:code/ready', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const room = await dataToggleRoomReady(
+        req.userId!,
+        String(req.params.code ?? ''),
+        Boolean(req.body?.ready)
+      );
+      res.json({ room });
+    } catch (err) {
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Unable to update ready state.' });
+    }
+  });
+
+  app.post('/api/rooms/:code/start', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const room = await dataStartRoomMatch(req.userId!, String(req.params.code ?? ''));
+      res.json({ room });
+    } catch (err) {
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Unable to start battle.' });
+    }
+  });
+
+  app.post('/api/rooms/:code/leave', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      await dataLeaveRoom(req.userId!, String(req.params.code ?? ''));
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Unable to leave room.' });
+    }
+  });
+
+  app.post('/api/rooms/:code/sync', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const result = await dataSyncRoomCombat(
+        req.userId!,
+        String(req.params.code ?? ''),
+        req.body ?? {}
+      );
+      res.json(result);
+    } catch (err) {
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Sync failed.' });
+    }
+  });
+
+  app.post('/api/invites', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { targetPlayerId, roomCode } = req.body ?? {};
+      const result = await dataSendInvite(
+        req.userId!,
+        String(targetPlayerId ?? ''),
+        typeof roomCode === 'string' ? roomCode : undefined
+      );
+      res.status(201).json(result);
+    } catch (err) {
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Could not send invite.' });
+    }
+  });
+
+  app.post('/api/invites/:id/respond', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const accept = Boolean(req.body?.accept);
+      const result = await dataRespondInvite(req.userId!, String(req.params.id ?? ''), accept);
+      res.json(result);
+    } catch (err) {
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Could not respond to invite.' });
+    }
+  });
+
+  app.post('/api/matchmaking/join', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const result = await dataJoinMatchmaking(req.userId!);
+      res.json(result);
+    } catch (err) {
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Matchmaking failed.' });
+    }
+  });
+
+  app.post('/api/matchmaking/leave', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      await dataLeaveMatchmaking(req.userId!);
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Failed to leave queue.' });
+    }
   });
 
   app.use('/api', (_req: Request, res: Response) => {
